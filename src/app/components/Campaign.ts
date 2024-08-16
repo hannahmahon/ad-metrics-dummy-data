@@ -247,7 +247,7 @@ export class Campaign {
         let csvContent = "data:text/csv;charset=utf-8," + "Day,Ad name,Spend,Impressions,Clicks,Campaign,Adset" + "\r\n";
         for (let day = 0; day < this.daysInCampaign; day++) {
             this.ads.forEach(ad => {
-                csvContent += `${day + 1},${ad.name},${ad.dailyAdSpend[day]},${ad.dailyImpressions[day]},${ad.dailyClicks[day]}${ad.campaignName},${ad.adsetName}`
+                csvContent += `${day + 1},${ad.name},${ad.dailyAdSpend[day]},${ad.dailyImpressions[day]},${ad.dailyClicks[day]},${ad.campaignName},${ad.adsetName}`
                 csvContent += "\r\n";
             })
         }

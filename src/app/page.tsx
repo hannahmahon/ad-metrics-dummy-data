@@ -251,15 +251,8 @@ export default function Home() {
   const [tableData, setTableData] = useState<TableData | null>(null);
 
   const handleDownloadCSV = () => {
-    if (!tableData) return;
-    let csvContent =
-      "data:text/csv;charset=utf-8," +
-      tableData?.columns.map(({ headerName }) => headerName).join(",") +
-      "\r\n";
-    csvContent += tableData.data
-      .map((datum) => Object.values(datum).join(","))
-      .join("\r\n");
-    window.open(encodeURI(csvContent));
+    if (!campaign) return;
+    campaign.downloadCSV();
   };
 
   const handleSetCampaign = (newCampaign: Campaign | null) => {
