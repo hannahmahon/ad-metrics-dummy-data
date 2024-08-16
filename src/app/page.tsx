@@ -219,13 +219,13 @@ const MyForm = ({
                 <MinMaxNumberInput
                   name="dailySpend"
                   label="Daily ad spend"
-                  defaultValues={[1000, 120000]}
+                  defaultValues={[1000, 10000]}
                   className={`${stackedClasses} pr-2`}
                 />
                 <MinMaxNumberInput
                   name="cpm"
                   label="Target CPM"
-                  defaultValues={[9, 45]}
+                  defaultValues={[25, 45]}
                   className={`${stackedClasses} pl-2`}
                 />
                 <MinMaxNumberInput
@@ -343,7 +343,7 @@ export default function Home() {
               columnDefs={tableData.columns}
               defaultColDef={{
                 resizable: false,
-                sortable: false,
+                sortable: true,
                 filter: false,
               }}
               domLayout="autoHeight"

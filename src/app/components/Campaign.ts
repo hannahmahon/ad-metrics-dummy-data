@@ -48,40 +48,122 @@ class Ad {
     public adsetName: string = "Adset";
     public dailyAdSpend: number[] = [];
     public dailyImpressions: number[] = [];
-    public dailyClicks: number[] = [];
     public dailyCpm: number[] = [];
-    public dailyCtrs: number[] = [];
+    public dailyClicks: number[] = [];
     public dayTrends: number[] = [];
-    public totalCpmTarget: number = 0; // Target CPM for the entire campaign
+    private cpmRange: MinMaxRange;
+    private ctrRange: MinMaxRange;
+    private spendRange: MinMaxRange;
+    private daysInCampaign: number;
 
-
-    constructor({ campaignName, adsetName, daysInCampaign }: { campaignName: string; adsetName: string; daysInCampaign: number }) {
+    constructor({
+        campaignName,
+        adsetName,
+        daysInCampaign,
+        cpmRange,
+        ctrRange,
+        spendRange
+    }: {
+        campaignName: string;
+        adsetName: string;
+        daysInCampaign: number;
+        cpmRange: MinMaxRange;
+        ctrRange: MinMaxRange;
+        spendRange: MinMaxRange;
+    }) {
         this.campaignName = campaignName;
         this.adsetName = adsetName;
-        this.name = `Ad_${Math.round(Math.random() * 100000000)}`
+        this.name = `Ad_${Math.round(Math.random() * 100000000)}`;
+        this.cpmRange = cpmRange;
+        this.ctrRange = ctrRange;
+        this.spendRange = spendRange;
+        this.daysInCampaign = daysInCampaign;
 
-        const maxNumberOfTrends = Math.min(Math.floor(daysInCampaign / minimumTrendDays) - 1, 1)
-        const num = generateRandomNumber([1, maxNumberOfTrends])
-        const numTrendPhases = Math.floor(num)
-        let daysAvailable = daysInCampaign;
+        this.generateDayTrends();
+    }
+
+    // Generate random trend phases that affect CPM/CTR trends
+    private generateDayTrends() {
+        const maxNumberOfTrends = Math.floor(this.daysInCampaign / minimumTrendDays);
+        const numTrendPhases = Math.floor(generateRandomNumber([0, maxNumberOfTrends]));
+        let daysAvailable = this.daysInCampaign;
+
         Array(numTrendPhases).fill(0).forEach((_, i) => {
-            const needThisManyRemaining = (numTrendPhases - i) * minimumTrendDays
-            const maxDaysForThisTrend = daysAvailable - needThisManyRemaining
-            let daysInTrend = Math.floor(generateRandomNumber([minimumTrendDays, maxDaysForThisTrend]))
+            const needThisManyRemaining = (numTrendPhases - i) * minimumTrendDays;
+            const maxDaysForThisTrend = daysAvailable - needThisManyRemaining;
+            let daysInTrend = Math.floor(generateRandomNumber([minimumTrendDays, maxDaysForThisTrend]));
             if (i === numTrendPhases - 1) {
-                daysInTrend = daysAvailable
+                daysInTrend = daysAvailable;
             }
             daysAvailable -= daysInTrend;
 
             const direction = Math.round(Math.random()) === 0 ? 'up' : 'down';
             Array(daysInTrend).fill(0).forEach(() => {
-                const dayStrength = generateRandomNumber([0, .15]);
+                const dayStrength = generateRandomNumber([0, .2]);
                 const trendFactor = direction === 'up' ? 1 + dayStrength : 1 - dayStrength;
-                this.dayTrends.push(trendFactor)
-            })
-        })
+                this.dayTrends.push(trendFactor);
+            });
+        });
+    }
+
+    // Calculate daily CPM based on trends and random fluctuation
+    private calculateDailyCpm(day: number): number {
+        const fluctuation = generateRandomNumber([-0.5, 1.5]); // 50% to 200% fluctuation
+        const baseCpm = generateRandomNumber(this.cpmRange);
+        const trendFactor = this.dayTrends[day] || 1;
+
+        // Calculate the raw CPM value with trends and fluctuations
+        let calculatedCpm = baseCpm * (1 + fluctuation) * trendFactor;
+
+        // Clamp the CPM value to ensure it stays within the range
+        calculatedCpm = Math.max(this.cpmRange[0] * generateRandomNumber([.75, 1.25]), Math.min(calculatedCpm, this.cpmRange[1]));
+
+        return calculatedCpm;
+    }
+
+    // Calculate daily CTR based on trends and random fluctuation
+    private calculateDailyCtr(day: number): number {
+        const fluctuation = generateRandomNumber([-0.5, 1.5]); // 50% to 200% fluctuation
+        const baseCtr = generateRandomNumber(this.ctrRange);
+        const trendFactor = this.dayTrends[day] || 1;
+
+        // Calculate the raw CTR value with trends and fluctuations
+        let calculatedCtr = baseCtr * (1 + fluctuation) * trendFactor;
+
+        // Clamp the CTR value to ensure it stays within the range
+        calculatedCtr = Math.max(this.ctrRange[0] * generateRandomNumber([.75, 1.25]), Math.min(calculatedCtr, this.ctrRange[1]));
+
+        return calculatedCtr;
+    }
+
+    // Run the ad campaign for the specified number of days
+    public runCampaign() {
+        for (let day = 0; day < this.daysInCampaign; day++) {
+            const cpm = this.calculateDailyCpm(day);
+            const ctr = this.calculateDailyCtr(day);
+
+            const spend = generateRandomNumber(this.spendRange);
+            const impressions = (spend / cpm) * 1000;
+            const clicks = impressions * ctr;
+
+            this.dailyAdSpend.push(spend);
+            this.dailyImpressions.push(impressions);
+            this.dailyCpm.push(cpm);
+            this.dailyClicks.push(clicks);
+        }
+    }
+
+    // Optionally export data as CSV
+    public toCSV() {
+        let csvContent = "data:text/csv;charset=utf-8," + "Day,Ad name,Spend,Impressions,Clicks,Campaign,Adset" + "\r\n";
+        for (let day = 0; day < this.daysInCampaign; day++) {
+            csvContent += `${day + 1},${this.name},${this.dailyAdSpend[day]},${this.dailyImpressions[day]},${this.dailyClicks[day]},${this.campaignName},${this.adsetName}`;
+            csvContent += "\r\n";
+        }
+        return csvContent;
     }
 }
+
 
 export class Campaign {
     public name: string = "Campaign";
@@ -91,10 +173,8 @@ export class Campaign {
     public startDate: number;
     public endDate: number;
     public daysInCampaign: number;
-    public dailyAdSpend: number;
     public cpm: number;
     public ctr: number;
-    private normalizedFactors: number[];
 
     constructor({
         startDate,
@@ -107,19 +187,7 @@ export class Campaign {
         ctr = [.004, .035]
     }: CampaignArgs) {
         this.name = `Campaign_${Math.round(Math.random() * 100000000)}`
-        this.adsets = getArrayOfLengthBetween(numAdsetsPerCampaign).map(() => {
-            const adset = new Adset();
-            const adsetAds = getArrayOfLengthBetween(numAdsPerAdset).map(() => {
-                return new Ad({
-                    campaignName: this.name,
-                    adsetName: adset.name,
-                    daysInCampaign
-                })
-            })
-            adset.ads = adsetAds;
-            this.ads.push(...adsetAds);
-            return adset;
-        })
+
         const startDateFormatted = Math.round(generateRandomNumber(startDate))
         const endDateFormatted = Math.round(generateRandomNumber(endDate))
         const msBetweenDates = endDateFormatted - startDateFormatted
@@ -129,177 +197,63 @@ export class Campaign {
         this.startDate = startDateFormatted;
         this.endDate = endDateFormatted;
         this.daysInCampaign = numDays;
-        this.dailyAdSpend = Math.round(generateRandomNumber(dailyAdSpend));
-        this.cpm = Math.round(generateRandomNumber(cpm));
-        this.ctr = generateRandomNumber(ctr);
-
-
-        // Generate random performance factors for each ad (using a Dirichlet distribution equivalent)
-        const performanceFactors = Array(this.ads.length)
-            .fill(0)
-            .map(() => Math.random());
-
-        const sumOfFactors = performanceFactors.reduce((sum, factor) => sum + factor, 0);
-        this.normalizedFactors = performanceFactors.map((factor) => factor / sumOfFactors);
-
-        // Assign random CPMs to each ad, adjusting them so that their weighted average equals the targetCampaignCPM
-        // const randomCPMs = Array(this.ads.length)
-        //     .fill(0)
-        //     .map(() => {
-        //         const val = this.cpm * (0.5 + Math.random() * 1.5)
-        //         return val;
-        //     }); // Random CPMs between 50% and 150% of the target
-
-        // Calculate the total spend at these CPMs to adjust the overall CPM
-        let totalSpendAtRandomCPMs = 0;
-        let totalImpressionsAtRandomCPMs = 0;
-
-        this.normalizedFactors.forEach((factor, index) => {
-            const spend = factor * this.dailyAdSpend;
-            const impressions = (spend / this.cpm) * 1000;
-            totalSpendAtRandomCPMs += spend;
-            totalImpressionsAtRandomCPMs += impressions;
-        });
-
-        // Assign total CPM targets for each ad based on their performance
-        this.assignAdPerformanceTargets();
+        this.adsets = this.createAdsets(numAdsetsPerCampaign, numAdsPerAdset, daysInCampaign, cpm, ctr, dailyAdSpend);
     }
 
-    assignAdPerformanceTargets() {
-        const totalTargetCPM = this.cpm * this.ads.length;
-
-        // Calculate weights for "winner," "average," and "loser" categories
-        const numAds = this.ads.length;
-        const performanceWeights = this.calculatePerformanceWeights(numAds);
-
-        // Assign CPM targets based on calculated weights
-        this.ads.forEach((ad, index) => {
-            ad.totalCpmTarget = totalTargetCPM * performanceWeights[index];
+    private createAdsets(numAdsetsPerCampaign: MinMaxRange, numAdsPerAdset: MinMaxRange, daysInCampaign: number, cpmRange: MinMaxRange, ctrRange: MinMaxRange, spendRange: MinMaxRange): Adset[] {
+        return getArrayOfLengthBetween(numAdsetsPerCampaign).map(() => {
+            const adset = new Adset();
+            const adsetAds = getArrayOfLengthBetween(numAdsPerAdset).map(() => {
+                const ad = new Ad({
+                    campaignName: this.name,
+                    adsetName: adset.name,
+                    daysInCampaign,
+                    cpmRange,
+                    ctrRange,
+                    spendRange
+                });
+                this.ads.push(ad);
+                return ad;
+            });
+            adset.ads = adsetAds;
+            return adset;
         });
     }
 
-    calculatePerformanceWeights(numAds: number): number[] {
-        // Sort ads by expected performance (e.g., higher indices mean lower performance)
-        const sortedIndices = Array.from({ length: numAds }, (_, i) => i).sort((a, b) => a - b);
 
-        // Assign higher weights to "winners" and lower to "losers"
-        const totalWeight = numAds * (numAds + 1) / 2;
-        return sortedIndices.map(index => (numAds - index) / totalWeight);
+    public runCampaign() {
+        this.ads.forEach(ad => ad.runCampaign());
+
+        const { impressions, spend, clicks } = this.ads.reduce((acc, ad) => {
+            acc.impressions += ad.dailyImpressions.reduce((acc, num) => acc + num, 0)
+            acc.spend += ad.dailyAdSpend.reduce((acc, num) => acc + num, 0)
+            acc.clicks += ad.dailyClicks.reduce((acc, num) => acc + num, 0)
+            return acc;
+        }, { impressions: 0, spend: 0, clicks: 0 })
+        this.cpm = Math.round(spend / (impressions / 1000))
+        this.ctr = Number((clicks / impressions).toFixed(2))
     }
 
-    generateDailyCtrs(): number[] {
-        // Create a slight random fluctuation around the campaign CTR for each ad
-        const dailyCtrs = this.ads.map(() => {
-            const fluctuation = (Math.random() * 1.5) - 0.5; // Fluctuate between -50% and +150% around the campaign CTR
-            return this.ctr * (1 + fluctuation);
-        });
-
-        // Calculate the total impressions across all ads
-        const totalImpressions = this.ads.reduce((sum, ad) => {
-            return sum + ad.dailyImpressions[ad.dailyImpressions.length - 1]; // Sum the impressions for the latest day
-        }, 0);
-
-        // Calculate the total clicks based on the initial daily CTRs
-        const totalClicks = dailyCtrs.reduce((sum, ctr, index) => {
-            return sum + (ctr * this.ads[index].dailyImpressions[this.ads[index].dailyImpressions.length - 1]); // Sum the clicks
-        }, 0);
-
-        // Calculate the actual CTR across all ads
-        const actualCtr = totalClicks / totalImpressions;
-
-        // Calculate the adjustment factor to ensure the daily CTRs roll up to the campaign-level CTR
-        const ctrAdjustmentFactor = this.ctr / actualCtr;
-
-        // Adjust each ad's daily CTR based on the adjustment factor
-        const adjustedDailyCtrs = dailyCtrs.map(ctr => ctr * ctrAdjustmentFactor);
-
-        return adjustedDailyCtrs;
-    }
-
-    runCampaign() {
-        console.log("TARGET CPM", this.cpm);
-
-        // Generate data for each day
-        for (let day = 0; day < this.daysInCampaign; day++) {
-            // Introduce variability in daily spend distribution
-            const dailyVariabilityFactors = Array(this.ads.length)
-                .fill(0)
-                .map(() => Math.random() * 2); // Introduces variability in the range [0, 2]
-
-            const sumOfVariabilityFactors = dailyVariabilityFactors.reduce(
-                (sum, factor) => sum + factor,
-                0
-            );
-
-            // Calculate spend distribution for each ad
-            const dailySpendDistribution = this.normalizedFactors.map(
-                (factor, index) =>
-                    (factor * this.dailyAdSpend * dailyVariabilityFactors[index]) /
-                    sumOfVariabilityFactors
-            );
-
-            // Generate CPMs for each ad for the current day, adjusted by dayTrends and totalCpmTarget
-            const dailyCPMs = this.ads.map((ad, index) => {
-                const fluctuation = (Math.random() * 0.7) - 0.35; // Range [-0.35, 0.35]
-                const baseCPM = ad.totalCpmTarget / this.daysInCampaign;
-                return baseCPM * (1 + fluctuation) * (ad.dayTrends[day] || 1);
-            });
-
-            // Calculate the total spend and impressions for the day to adjust CPM
-            let totalDailySpendAtRandomCPMs = 0;
-            let totalDailyImpressionsAtRandomCPMs = 0;
-
-            dailySpendDistribution.forEach((spend, index) => {
-                const impressions = (spend / dailyCPMs[index]) * 1000;
-                totalDailySpendAtRandomCPMs += spend;
-                totalDailyImpressionsAtRandomCPMs += impressions;
-            });
-            // Generate CTRs for each ad for the current day, adjusted to roll up to the campaign-level CTR
-            const dailyActualCPM = totalDailySpendAtRandomCPMs / (totalDailyImpressionsAtRandomCPMs / 1000);
-            const dailyCpmAdjustmentFactor = this.cpm / dailyActualCPM;
-
-            // Adjust CPMs to ensure the daily CPM rolls up to the target
-            const adjustedDailyCPMs = dailyCPMs.map(cpm => cpm * dailyCpmAdjustmentFactor);
-
-            dailySpendDistribution.forEach((spend, index) => {
-                const impressions = (spend / adjustedDailyCPMs[index]) * 1000;
-                this.ads[index].dailyImpressions.push(Math.round(impressions));
-            })
-            const dailyCtrs = this.generateDailyCtrs();
-
-
-            // Calculate impressions and clicks based on adjusted CPMs and store data
-            console.log(dailyCtrs)
-            dailySpendDistribution.forEach((spend, index) => {
-                const impressions = this.ads[index].dailyImpressions[day];
-                const clicks = Math.round(impressions * dailyCtrs[index]); // Use individual daily CTR
-                this.ads[index].dailyAdSpend.push(spend);
-                this.ads[index].dailyClicks.push(clicks); // Store clicks
-                this.ads[index].dailyCpm.push(adjustedDailyCPMs[index]);
-                this.ads[index].dailyCtrs.push(dailyCtrs[index]); // Store CTRs
-            });
-        }
-    }
-
-    downloadCSV() {
-        let csvContent = "data:text/csv;charset=utf-8," + "Day,Ad name,Spend,Impressions,Clicks,Campaign,Adset" + "\r\n";
-        for (let day = 0; day < this.daysInCampaign; day++) {
-            this.ads.forEach(ad => {
-                csvContent += `${day + 1},${ad.name},${ad.dailyAdSpend[day]},${ad.dailyImpressions[day]},${ad.dailyClicks[day]},${ad.campaignName},${ad.adsetName}`
+    public downloadCSV() {
+        let csvContent = "data:text/csv;charset=utf-8," + "Date,Ad name,Spend,Impressions,Clicks,Campaign,Adset" + "\r\n";
+        this.ads.forEach(ad => {
+            for (let day = 0; day < ad.dailyAdSpend.length; day++) {
+                csvContent += `${formatDate(this.startDate + (day * dayInMs))},${ad.name},${ad.dailyAdSpend[day]},${ad.dailyImpressions[day]},${ad.dailyClicks[day]},${ad.campaignName},${ad.adsetName}`;
                 csvContent += "\r\n";
-            })
-        }
-
+            }
+        });
         const encodedUri = encodeURI(csvContent);
-        window.open(encodedUri)
+        window.open(encodedUri);
     }
 
     getTableData() {
         const columns = [
-            { headerName: 'Day', field: 'day' },
+            { headerName: 'Date', field: 'date' },
             { headerName: 'Ad name', field: 'adName' },
             { headerName: 'Spend', field: 'spend' },
             { headerName: 'Impressions', field: 'impressions' },
+            // { headerName: 'CPMs', field: 'cpms' },
+            // { headerName: 'CTRs', field: 'ctrs' },
             { headerName: 'Clicks', field: 'clicks' },
             { headerName: 'Campaign', field: 'campaign' },
             { headerName: 'Adset', field: 'adset' },
@@ -309,10 +263,12 @@ export class Campaign {
             this.ads.forEach(ad => {
                 const date = formatDate(this.startDate + (day * dayInMs))
                 data.push({
-                    day: date,
+                    date: date,
                     adName: ad.name,
                     spend: ad.dailyAdSpend[day],
                     impressions: ad.dailyImpressions[day],
+                    // cpms: parseFloat((ad.dailyAdSpend[day] / (ad.dailyImpressions[day] / 1000)).toFixed(2)),
+                    // ctrs: parseFloat((100 * ad.dailyClicks[day] / (ad.dailyImpressions[day])).toFixed(2)),
                     clicks: ad.dailyClicks[day],
                     campaign: ad.campaignName,
                     adset: ad.adsetName
