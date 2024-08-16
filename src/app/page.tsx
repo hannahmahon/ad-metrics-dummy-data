@@ -1,113 +1,322 @@
-import Image from "next/image";
+"use client";
+import React, { useState } from "react";
+import { Fragment } from "react";
+import { Form, Field, useFormState } from "react-final-form";
+import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
+import { Campaign, TableData } from "./components/Campaign";
+import { GoDownload } from "react-icons/go";
+
+const groupClassNames =
+  "group w-full lg:w-1/4 mx-4 rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30";
+
+type InputProps = {
+  name: string;
+  label: string | React.ReactNode;
+  defaultValue: string | number;
+  disabled?: boolean;
+};
+type MinMaxNumberInputProps = Omit<InputProps, "defaultValue"> & {
+  defaultValues: [number, number];
+};
+type MinMaxDateInputProps = Omit<InputProps, "defaultValue"> & {
+  defaultValues: [string | number, string | number];
+};
+
+const BoldUppercase = (props: { children: React.ReactNode }) => (
+  <small className="font-bold uppercase">{props.children} </small>
+);
+
+const FieldWrapper = (props: { children: React.ReactNode }) => {
+  return <div className="flex m-2 items-center w-full">{props.children}</div>;
+};
+
+const NumberInput = ({ name, label, defaultValue, disabled }: InputProps) => {
+  const { values } = useFormState();
+  return (
+    <FieldWrapper>
+      <React.Fragment>
+        {label && <label>{label}</label>}
+        <Field
+          className={"my-2 ml-2 py-1 px-2 rounded-lg w-full"}
+          name={name}
+          component="input"
+          type="number"
+          defaultValue={defaultValue}
+          disabled={disabled}
+        />
+      </React.Fragment>
+    </FieldWrapper>
+  );
+};
+
+const DateInput = ({ name, label, defaultValue }: InputProps) => {
+  const { values } = useFormState();
+  return (
+    <FieldWrapper>
+      <>
+        <label>{label}</label>
+        <Field
+          className={"my-2 ml-2 py-1 px-2 w-full w-[198px] rounded-lg"}
+          name={name}
+          defaultValue={defaultValue}
+          component="input"
+          type="date"
+        />
+      </>
+    </FieldWrapper>
+  );
+};
+
+const MinMaxInput = ({
+  label,
+  defaultValues,
+  name,
+  Component,
+  disabled,
+}: MinMaxDateInputProps & { Component: (props: any) => JSX.Element }) => {
+  return (
+    <div>
+      <h2 className="text-lg ml-2 mt-4">{label}</h2>
+      <div className="flex flex-wrap sm:flex-nowrap w-full">
+        <Component
+          name={`${name}Min`}
+          disabled={disabled}
+          label={
+            <Fragment>
+              <BoldUppercase>Min</BoldUppercase>
+            </Fragment>
+          }
+          defaultValue={defaultValues[0]}
+        />
+        <Component
+          name={`${name}Max`}
+          disabled={disabled}
+          label={
+            <Fragment>
+              <BoldUppercase>Max</BoldUppercase>
+            </Fragment>
+          }
+          defaultValue={defaultValues[1]}
+        />
+      </div>
+    </div>
+  );
+};
+
+const MinMaxDateInput = (props: MinMaxDateInputProps) => {
+  return <MinMaxInput {...props} Component={DateInput} />;
+};
+const MinMaxNumberInput = (props: MinMaxNumberInputProps) => {
+  return <MinMaxInput {...props} Component={NumberInput} />;
+};
+
+const MyForm = ({
+  handleSetTableData,
+  handleSetIsProcessing,
+  isProcessing,
+}: {
+  handleSetTableData: (props: TableData | null) => void;
+  handleSetIsProcessing: (props: boolean) => void;
+  isProcessing: boolean;
+}) => {
+  const onSubmit = (values: Record<string, any>) => {
+    handleSetIsProcessing(true);
+    const startDateMin = new Date(values.campaignStartDateRangeMin).getTime();
+    const startDateMax = new Date(values.campaignStartDateRangeMax).getTime();
+
+    const endDateMin = new Date(values.campaignEndDateRangeMin).getTime();
+    const endDateMax = new Date(values.campaignEndDateRangeMax).getTime();
+
+    const args = {
+      startDate: [startDateMin, startDateMax],
+      endDate: [endDateMin, endDateMax],
+      numAdsetsPerCampaign: [
+        values.numAdsetsPerCampaignsMin,
+        values.numAdsetsPerCampaignsMax,
+      ].map(Number),
+      numAdsPerAdset: [values.numAdsPerAdsetMin, values.numAdsPerAdsetMax].map(
+        Number
+      ),
+      dailyAdSpend: [values.dailySpendMin, values.dailySpendMax].map(Number),
+      cpm: [values.cpmMin, values.cpmMax].map(Number),
+      ctr: [values.ctrMin, values.ctrMax].map(Number),
+    };
+    console.log(args);
+    const campaign = new Campaign(args);
+    window.campaign = campaign;
+    setTimeout(() => {
+      campaign.runCampaign();
+      handleSetTableData(campaign.getTableData());
+    }, 0)
+  };
+  const validate = (values: Record<string, any>) => {
+    const errors: Record<string, any> = {};
+
+    return errors;
+  };
+
+  return (
+    <Form
+      onSubmit={onSubmit}
+      validate={validate}
+      render={({ handleSubmit }) => (
+        <form onSubmit={handleSubmit} className="flex flex-wrap justify-center">
+          <fieldset className={`${groupClassNames}`}>
+            <h2 className="m-2 font-bold text-2xl">Campaigns</h2>
+            <MinMaxNumberInput
+              name="numCampaigns"
+              label="Number of campaigns*"
+              defaultValues={[1, 1]}
+              disabled
+            />
+            <MinMaxNumberInput
+              name="dailySpend"
+              label="Daily ad spend"
+              defaultValues={[1000, 120000]}
+            />
+            <MinMaxNumberInput
+              name="cpm"
+              label="Target CPM"
+              defaultValues={[9, 45]}
+            />
+            <MinMaxNumberInput
+              name="ctr"
+              label="Target CTR"
+              defaultValues={[0.004, 0.035]}
+            />
+          </fieldset>
+          <fieldset className={`${groupClassNames} `}>
+            <h2 className="m-2 font-bold text-2xl">Date Range</h2>
+            <MinMaxDateInput
+              name="campaignStartDateRange"
+              label="All campaigns should start between:"
+              defaultValues={["2024-01-01", "2024-01-01"]}
+            />
+            <MinMaxDateInput
+              name="campaignEndDateRange"
+              label="All campaigns should end between:"
+              defaultValues={["2024-01-31", "2024-01-31"]}
+            />
+            <h2 className="m-2 font-bold text-2xl">Ads</h2>
+            <MinMaxNumberInput
+              name="numAdsetsPerCampaigns"
+              label="Number of adsets per campaign"
+              defaultValues={[3, 5]}
+            />
+            <MinMaxNumberInput
+              name="numAdsPerAdset"
+              label="Number of ads per adset"
+              defaultValues={[3, 6]}
+            />
+          </fieldset>
+          <fieldset className={`${groupClassNames}`}>
+            <h2 className="m-2 font-bold text-2xl">Other</h2>
+            <MinMaxNumberInput
+              name="clickToATCRatio"
+              label="Add to Cart Rate*"
+              defaultValues={[0.002, 0.25]}
+            />
+            <MinMaxNumberInput
+              name="aov"
+              label="Average Order Value*"
+              defaultValues={[40, 250]}
+            />
+            <MinMaxNumberInput
+              name="cac"
+              label="Customer Acquisition Cost*"
+              defaultValues={[35, 150]}
+            />
+            <MinMaxNumberInput
+              name="roas"
+              label="Return on Ad Spend*"
+              defaultValues={[0.5, 2.5]}
+            />
+          </fieldset>
+
+          <button
+            className="bg-gray-900 text-white py-2 px-3 rounded-lg my-12 w-1/4"
+            type="submit"
+            disabled={isProcessing}
+          >
+            {isProcessing ? "Processing..." : "Submit"}
+          </button>
+        </form>
+      )}
+    />
+  );
+};
 
 export default function Home() {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [tableData, setTableData] = useState<TableData | null>(null);
+
+  const handleDownloadCSV = () => {
+    if (!tableData) return;
+    let csvContent =
+      "data:text/csv;charset=utf-8," +
+      tableData?.columns.map(({ headerName }) => headerName).join(",") +
+      "\r\n";
+    csvContent += tableData.data
+      .map((datum) => Object.values(datum).join(","))
+      .join("\r\n");
+    window.open(encodeURI(csvContent));
+  };
+
+  const handleSetTableData = (tableData: TableData | null) => {
+    setTableData(tableData);
+    setIsProcessing(false);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="flex min-h-screen flex-col items-center md:p-24 m-auto">
+      <div className="z-10 w-full items-center justify-center lg:flex mb-6">
+        <h1 className="font-bold font-mono text-4xl mt-24 sm:mt-2 text-center w-full">
+          Ad Metric Data Generator
+        </h1>
+      </div>
+
+      <div className="mt-9 w-full">
+        <div className="w-full">
+          <MyForm
+            handleSetTableData={handleSetTableData}
+            isProcessing={isProcessing}
+            handleSetIsProcessing={setIsProcessing}
+          />
+          <sub className="text-center block">
+            *To be implemented at a later date
+          </sub>
         </div>
       </div>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      {tableData && (
+        <div className="mt-9 w-full">
+          <hr />
+          <div className="flex my-9 items-center">
+            <h2 className=" font-bold text-2xl">Campaign Report</h2>
+            <button
+              onClick={handleDownloadCSV}
+              className="ml-3 flex items-center hover:text-rose-500"
+            >
+              <GoDownload />
+              Download CSV
+            </button>
+          </div>
+          <div className="ag-theme-alpine" style={{ width: "100%" }}>
+            <AgGridReact
+              rowData={tableData.data}
+              columnDefs={tableData.columns}
+              defaultColDef={{
+                resizable: true,
+                sortable: true,
+                filter: true,
+              }}
+              domLayout="autoHeight"
+              enableRangeSelection={true}
+              clipboardDeliminator="\t"
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }
