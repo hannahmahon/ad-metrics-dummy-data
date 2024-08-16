@@ -7,7 +7,7 @@ import { Campaign, formatDate, TableData } from "./components/Campaign";
 import { GoDownload } from "react-icons/go";
 
 const groupClassNames =
-  "group w-full lg:w-1/4 mx-4 rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:bg-opacity-10 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30";
+  "group w-full lg:w-1/4 mx-4 rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:bg-opacity-10 ";
 
 type InputProps = {
   name: string;
@@ -37,7 +37,7 @@ const NumberInput = ({ name, label, defaultValue, disabled }: InputProps) => {
       <React.Fragment>
         {label && <label>{label}</label>}
         <Field
-          className={"my-2 ml-2 py-1 px-2 rounded-lg w-full min-w-[130px] dark:text-gray-900"}
+          className={"my-2 ml-2 py-1 px-2 rounded-lg w-full min-w-[130px]"}
           name={name}
           component="input"
           type="number"
@@ -57,7 +57,7 @@ const DateInput = ({ name, label, defaultValue }: InputProps) => {
         <label>{label}</label>
         <Field
           className={
-            "my-2 ml-2 py-1 px-2 w-full min-w-[130px] rounded-lg dark:text-gray-900"
+            "my-2 ml-2 py-1 px-2 w-full min-w-[130px] rounded-lg"
           }
           name={name}
           defaultValue={defaultValue}
@@ -244,7 +244,7 @@ const MyForm = ({
             </fieldset>
           </div>
           <button
-            className="bg-gray-900 text-white py-2 px-3 rounded-lg mx-auto my-12 md:w-1/4"
+            className="bg-transparent border text-white py-2 px-3 rounded-lg mx-auto my-12 md:w-1/4 hover:bg-gray-100 hover:bg-opacity-10"
             type="submit"
             disabled={isProcessing}
           >
