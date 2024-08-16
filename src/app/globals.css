@@ -4,7 +4,7 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: 20 184 166; /*214, 219, 220;*/
   --background-end-rgb: 255, 255, 255;
 }
 
@@ -19,19 +19,57 @@
 * {
   box-sizing: border-box;
 }
+html {
+  background: black;
+}
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
+  /* color: rgb(var(--foreground-rgb)); */
+  /* background: linear-gradient(
       to bottom,
       transparent,
       rgb(var(--background-end-rgb))
     )
-    rgb(var(--background-start-rgb));
+    rgb(var(--background-start-rgb)); */
+  color: white;
+}
+
+input:not(:disabled) {
+  color: black;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+.bg-main {
+  background: rgba(15, 118, 110, 0.514);
+  background: linear-gradient(
+      200deg,
+      rgba(15, 118, 110, 0.514) 0%,
+      rgba(13, 148, 136, 0.506) 35%,
+      rgba(99, 102, 241, 0.522) 100%
+    ) left top no-repeat,
+    linear-gradient(
+      330deg,
+      rgba(15, 118, 110, 0.514)0%,
+      rgba(13, 148, 136, 0.506) 35%,
+      rgba(99, 102, 241, 0.522)  100%
+    ) left 100vh no-repeat;
+  /* background-position: 0 0, 100% 100vh; */
+  background-size: auto 100vh, auto 100vh;
+}
+
+.ag-theme-quartz {
+  /* --ag-foreground-color: rgb(126, 46, 132); */
+  --ag-background-color: rgb(255, 255, 255, .6);
+  /* --ag-header-foreground-color: rgb(204, 245, 172); */
+  --ag-header-background-color: rgb(255, 255, 255, .6);
+  /* --ag-odd-row-background-color: rgb(0, 0, 0, 0.03); */
+  /* --ag-header-column-resize-handle-color: rgb(126, 46, 132); */
+
+  --ag-font-size: 17px;
+  /* --ag-font-family: monospace; */
 }

@@ -7,7 +7,7 @@ import { Campaign, formatDate, TableData } from "./components/Campaign";
 import { GoDownload } from "react-icons/go";
 
 const groupClassNames =
-  "group w-full lg:w-1/4 mx-4 rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30";
+  "group w-full lg:w-1/4 mx-4 rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:bg-opacity-10 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30";
 
 type InputProps = {
   name: string;
@@ -37,7 +37,7 @@ const NumberInput = ({ name, label, defaultValue, disabled }: InputProps) => {
       <React.Fragment>
         {label && <label>{label}</label>}
         <Field
-          className={"my-2 ml-2 py-1 px-2 rounded-lg w-full dark:text-gray-900"}
+          className={"my-2 ml-2 py-1 px-2 rounded-lg w-full min-w-[130px] dark:text-gray-900"}
           name={name}
           component="input"
           type="number"
@@ -56,7 +56,9 @@ const DateInput = ({ name, label, defaultValue }: InputProps) => {
       <>
         <label>{label}</label>
         <Field
-          className={"my-2 ml-2 py-1 px-2 w-full w-[198px] rounded-lg dark:text-gray-900"}
+          className={
+            "my-2 ml-2 py-1 px-2 w-full min-w-[130px] rounded-lg dark:text-gray-900"
+          }
           name={name}
           defaultValue={defaultValue}
           component="input"
@@ -121,11 +123,19 @@ const MyForm = ({
 }) => {
   const onSubmit = (values: Record<string, any>) => {
     handleSetIsProcessing(true);
-    const startDateMin = new Date(values.campaignStartDateRangeMin.replace("-", "/")).getTime();
-    const startDateMax = new Date(values.campaignStartDateRangeMax.replace("-", "/")).getTime();
+    const startDateMin = new Date(
+      values.campaignStartDateRangeMin.replace("-", "/")
+    ).getTime();
+    const startDateMax = new Date(
+      values.campaignStartDateRangeMax.replace("-", "/")
+    ).getTime();
 
-    const endDateMin = new Date(values.campaignEndDateRangeMin.replace("-", "/")).getTime();
-    const endDateMax = new Date(values.campaignEndDateRangeMax.replace("-", "/")).getTime();
+    const endDateMin = new Date(
+      values.campaignEndDateRangeMin.replace("-", "/")
+    ).getTime();
+    const endDateMax = new Date(
+      values.campaignEndDateRangeMax.replace("-", "/")
+    ).getTime();
 
     const args = {
       startDate: [startDateMin, startDateMax],
@@ -159,81 +169,82 @@ const MyForm = ({
       onSubmit={onSubmit}
       validate={validate}
       render={({ handleSubmit }) => (
-        <form onSubmit={handleSubmit} className="flex flex-wrap justify-center">
-          <fieldset className={`${groupClassNames}`}>
-            <h2 className="m-2 font-bold text-2xl">Campaigns</h2>
-            <MinMaxNumberInput
-              name="numCampaigns"
-              label="Number of campaigns*"
-              defaultValues={[1, 1]}
-              disabled
-            />
-            <MinMaxNumberInput
-              name="dailySpend"
-              label="Daily ad spend"
-              defaultValues={[1000, 120000]}
-            />
-            <MinMaxNumberInput
-              name="cpm"
-              label="Target CPM"
-              defaultValues={[9, 45]}
-            />
-            <MinMaxNumberInput
-              name="ctr"
-              label="Target CTR"
-              defaultValues={[0.004, 0.035]}
-            />
-          </fieldset>
-          <fieldset className={`${groupClassNames} `}>
-            <h2 className="m-2 font-bold text-2xl">Date Range</h2>
-            <MinMaxDateInput
-              name="campaignStartDateRange"
-              label="All campaigns should start between:"
-              defaultValues={["2024-01-01", "2024-01-01"]}
-            />
-            <MinMaxDateInput
-              name="campaignEndDateRange"
-              label="All campaigns should end between:"
-              defaultValues={["2024-01-31", "2024-01-31"]}
-            />
-            <h2 className="m-2 font-bold text-2xl">Ads</h2>
-            <MinMaxNumberInput
-              name="numAdsetsPerCampaigns"
-              label="Number of adsets per campaign"
-              defaultValues={[3, 5]}
-            />
-            <MinMaxNumberInput
-              name="numAdsPerAdset"
-              label="Number of ads per adset"
-              defaultValues={[3, 6]}
-            />
-          </fieldset>
-          <fieldset className={`${groupClassNames}`}>
-            <h2 className="m-2 font-bold text-2xl">Other</h2>
-            <MinMaxNumberInput
-              name="clickToATCRatio"
-              label="Add to Cart Rate*"
-              defaultValues={[0.002, 0.25]}
-            />
-            <MinMaxNumberInput
-              name="aov"
-              label="Average Order Value*"
-              defaultValues={[40, 250]}
-            />
-            <MinMaxNumberInput
-              name="cac"
-              label="Customer Acquisition Cost*"
-              defaultValues={[35, 150]}
-            />
-            <MinMaxNumberInput
-              name="roas"
-              label="Return on Ad Spend*"
-              defaultValues={[0.5, 2.5]}
-            />
-          </fieldset>
-
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="flex flex-wrap justify-center">
+            <fieldset className={`${groupClassNames}`}>
+              <h2 className="m-2 font-bold text-2xl">Campaigns</h2>
+              <MinMaxNumberInput
+                name="numCampaigns"
+                label="Number of campaigns*"
+                defaultValues={[1, 1]}
+                disabled
+              />
+              <MinMaxNumberInput
+                name="dailySpend"
+                label="Daily ad spend"
+                defaultValues={[1000, 120000]}
+              />
+              <MinMaxNumberInput
+                name="cpm"
+                label="Target CPM"
+                defaultValues={[9, 45]}
+              />
+              <MinMaxNumberInput
+                name="ctr"
+                label="Target CTR"
+                defaultValues={[0.004, 0.035]}
+              />
+            </fieldset>
+            <fieldset className={`${groupClassNames} `}>
+              <h2 className="m-2 font-bold text-2xl">Date Range</h2>
+              <MinMaxDateInput
+                name="campaignStartDateRange"
+                label="All campaigns should start between:"
+                defaultValues={["2024-01-01", "2024-01-01"]}
+              />
+              <MinMaxDateInput
+                name="campaignEndDateRange"
+                label="All campaigns should end between:"
+                defaultValues={["2024-01-31", "2024-01-31"]}
+              />
+              <h2 className="m-2 font-bold text-2xl">Ads</h2>
+              <MinMaxNumberInput
+                name="numAdsetsPerCampaigns"
+                label="Number of adsets per campaign"
+                defaultValues={[3, 5]}
+              />
+              <MinMaxNumberInput
+                name="numAdsPerAdset"
+                label="Number of ads per adset"
+                defaultValues={[3, 6]}
+              />
+            </fieldset>
+            <fieldset className={`${groupClassNames}`}>
+              <h2 className="m-2 font-bold text-2xl">Other</h2>
+              <MinMaxNumberInput
+                name="clickToATCRatio"
+                label="Add to Cart Rate*"
+                defaultValues={[0.002, 0.25]}
+              />
+              <MinMaxNumberInput
+                name="aov"
+                label="Average Order Value*"
+                defaultValues={[40, 250]}
+              />
+              <MinMaxNumberInput
+                name="cac"
+                label="Customer Acquisition Cost*"
+                defaultValues={[35, 150]}
+              />
+              <MinMaxNumberInput
+                name="roas"
+                label="Return on Ad Spend*"
+                defaultValues={[0.5, 2.5]}
+              />
+            </fieldset>
+          </div>
           <button
-            className="bg-gray-900 text-white py-2 px-3 rounded-lg my-12 md:w-1/4"
+            className="bg-gray-900 text-white py-2 px-3 rounded-lg mx-auto my-12 md:w-1/4"
             type="submit"
             disabled={isProcessing}
           >
@@ -265,7 +276,8 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center md:p-24 m-auto pb-12">
-      <div className="z-10 w-full items-center justify-center lg:flex mb-6">
+      <div className="bg-main fixed z-[-1] top-0 left-0 right-0 bottom-0" />
+      <div className="relative z-2 z-10 w-full items-center justify-center lg:flex mb-6">
         <h1 className="font-bold font-mono text-4xl mt-24 sm:mt-2 text-center w-full">
           Ad Metric Data Generator
         </h1>
@@ -306,23 +318,23 @@ export default function Home() {
             <h2 className="text-lg">
               End date: {formatDate(campaign.endDate)}
             </h2>
-            |<h2 className="text-lg">CTR: {(campaign.ctr * 100).toFixed(2)}%</h2>
+            |
+            <h2 className="text-lg">CTR: {(campaign.ctr * 100).toFixed(2)}%</h2>
             |<h2 className="text-lg">CPM: ${campaign.cpm}</h2>
           </div>
           <div className="mt-9 mb-4">
             <BoldUppercase>Table truncated to 100 rows</BoldUppercase>
           </div>
-          <div className="ag-theme-alpine" style={{ width: "100%" }}>
+          <div className="ag-theme-quartz-dark" style={{ width: "100%"}}>
             <AgGridReact
               rowData={tableData.data}
               columnDefs={tableData.columns}
               defaultColDef={{
-                resizable: true,
-                sortable: true,
-                filter: true,
+                resizable: false,
+                sortable: false,
+                filter: false,
               }}
               domLayout="autoHeight"
-              enableRangeSelection={true}
             />
           </div>
         </div>
