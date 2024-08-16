@@ -1,21 +1,21 @@
-type MinMAxRange = [number, number];
+type MinMaxRange = number[];
 export type TableData = {
     columns: { headerName: string; field: string; }[];
     data: Record<string, string | number>[];
 };
 const dayInMs = 1000 * 60 * 60 * 24;
-function generateRandomNumber([min, max]: MinMAxRange) {
+function generateRandomNumber([min, max]: MinMaxRange) {
     return Math.random() * (max - min) + min;
 };
 
-function getArrayOfLengthBetween([min, max]: MinMAxRange) {
+function getArrayOfLengthBetween([min, max]: MinMaxRange) {
     const num = Math.floor(generateRandomNumber([max, min]))
     return Array(num).fill("")
 }
 
 const addLeadingZero = (num: number) => num < 10 ? `0${num}` : `${num}`;
 
-const formatDate = (timestamp: number) => {
+export const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return `${date.getFullYear()}-${addLeadingZero(date.getMonth() + 1)}-${addLeadingZero(date.getDate())}`;
 }
@@ -73,13 +73,13 @@ class Ad {
 
 export type CampaignArgs = {
     daysInCampaign?: number;
-    startDate: MinMAxRange;
-    endDate: MinMAxRange;
-    numAdsetsPerCampaign: MinMAxRange;
-    numAdsPerAdset: MinMAxRange;
-    dailyAdSpend: MinMAxRange;
-    cpm: MinMAxRange;
-    ctr: MinMAxRange;
+    startDate: MinMaxRange;
+    endDate: MinMaxRange;
+    numAdsetsPerCampaign: MinMaxRange;
+    numAdsPerAdset: MinMaxRange;
+    dailyAdSpend: MinMaxRange;
+    cpm: MinMaxRange;
+    ctr: MinMaxRange;
 }
 
 export class Campaign {
@@ -87,12 +87,12 @@ export class Campaign {
     public adsets: Adset[] = [];
     public ads: Ad[] = [];
 
-    private startDate: number;
-    private endDate: number;
-    private daysInCampaign: number;
-    private dailyAdSpend: number;
-    private cpm: number;
-    private ctr: number;
+    public startDate: number;
+    public endDate: number;
+    public daysInCampaign: number;
+    public dailyAdSpend: number;
+    public cpm: number;
+    public ctr: number;
     private normalizedFactors: number[];
 
     constructor({
@@ -282,6 +282,6 @@ export class Campaign {
             })
         }
 
-        return { columns, data }
+        return { columns, data: data.slice(0, 100) }
     }
 }

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Fragment } from "react";
 import { Form, Field, useFormState } from "react-final-form";
 import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
-import { Campaign, TableData } from "./components/Campaign";
+import { Campaign, formatDate, TableData } from "./components/Campaign";
 import { GoDownload } from "react-icons/go";
 
 const groupClassNames =
@@ -111,11 +111,11 @@ const MinMaxNumberInput = (props: MinMaxNumberInputProps) => {
 };
 
 const MyForm = ({
-  handleSetTableData,
+  handleSetCampaign,
   handleSetIsProcessing,
   isProcessing,
 }: {
-  handleSetTableData: (props: TableData | null) => void;
+  handleSetCampaign: (props: Campaign | null) => void;
   handleSetIsProcessing: (props: boolean) => void;
   isProcessing: boolean;
 }) => {
@@ -143,11 +143,10 @@ const MyForm = ({
     };
     console.log(args);
     const campaign = new Campaign(args);
-    window.campaign = campaign;
     setTimeout(() => {
       campaign.runCampaign();
-      handleSetTableData(campaign.getTableData());
-    }, 0)
+      handleSetCampaign(campaign);
+    }, 0);
   };
   const validate = (values: Record<string, any>) => {
     const errors: Record<string, any> = {};
@@ -248,6 +247,7 @@ const MyForm = ({
 
 export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [tableData, setTableData] = useState<TableData | null>(null);
 
   const handleDownloadCSV = () => {
@@ -262,8 +262,11 @@ export default function Home() {
     window.open(encodeURI(csvContent));
   };
 
-  const handleSetTableData = (tableData: TableData | null) => {
-    setTableData(tableData);
+  const handleSetCampaign = (newCampaign: Campaign | null) => {
+    setCampaign(newCampaign);
+    if (newCampaign) {
+      setTableData(newCampaign.getTableData());
+    }
     setIsProcessing(false);
   };
 
@@ -278,7 +281,7 @@ export default function Home() {
       <div className="mt-9 w-full">
         <div className="w-full">
           <MyForm
-            handleSetTableData={handleSetTableData}
+            handleSetCampaign={handleSetCampaign}
             isProcessing={isProcessing}
             handleSetIsProcessing={setIsProcessing}
           />
@@ -288,10 +291,10 @@ export default function Home() {
         </div>
       </div>
 
-      {tableData && (
-        <div className="mt-9 w-full">
+      {tableData && campaign && (
+        <div className="mt-9 px-9 w-full">
           <hr />
-          <div className="flex my-9 items-center">
+          <div className="flex mt-9 mb-4 items-center">
             <h2 className=" font-bold text-2xl">Campaign Report</h2>
             <button
               onClick={handleDownloadCSV}
@@ -300,6 +303,21 @@ export default function Home() {
               <GoDownload />
               Download CSV
             </button>
+          </div>
+          <div className="flex flex-col md:flex-row justify-between my-4">
+            <h2 className="text-lg">Campaign name: {campaign.name}</h2>|
+            <h2 className="text-lg">
+              Start date: {formatDate(campaign.startDate)}
+            </h2>
+            |
+            <h2 className="text-lg">
+              End date: {formatDate(campaign.endDate)}
+            </h2>
+            |<h2 className="text-lg">CTR: {Math.round(campaign.ctr * 100)}%</h2>
+            |<h2 className="text-lg">CPM: ${campaign.cpm}</h2>
+          </div>
+          <div className="mt-9 mb-4">
+            <BoldUppercase>Table truncated to 100 rows</BoldUppercase>
           </div>
           <div className="ag-theme-alpine" style={{ width: "100%" }}>
             <AgGridReact
@@ -312,7 +330,6 @@ export default function Home() {
               }}
               domLayout="autoHeight"
               enableRangeSelection={true}
-              clipboardDeliminator="\t"
             />
           </div>
         </div>
