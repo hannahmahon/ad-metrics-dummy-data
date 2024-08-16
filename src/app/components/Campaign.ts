@@ -37,6 +37,7 @@ class Ad {
     public dailyImpressions: number[] = [];
     public dailyClicks: number[] = [];
     public dailyCpm: number[] = [];
+    public dailyCtrs: number[] = [];
     public dayTrends: number[] = [];
     public totalCpmTarget: number = 0; // Target CPM for the entire campaign
 
@@ -186,6 +187,34 @@ export class Campaign {
         return sortedIndices.map(index => (numAds - index) / totalWeight);
     }
 
+    generateDailyCtrs(): number[] {
+        // Create a slight random fluctuation around the campaign CTR for each ad
+        const dailyCtrs = this.ads.map(() => {
+            const fluctuation = (Math.random() * 1.5) - 0.5; // Fluctuate between -50% and +150% around the campaign CTR
+            return this.ctr * (1 + fluctuation);
+        });
+
+        // Calculate the total impressions across all ads
+        const totalImpressions = this.ads.reduce((sum, ad) => {
+            return sum + ad.dailyImpressions[ad.dailyImpressions.length - 1]; // Sum the impressions for the latest day
+        }, 0);
+
+        // Calculate the total clicks based on the initial daily CTRs
+        const totalClicks = dailyCtrs.reduce((sum, ctr, index) => {
+            return sum + (ctr * this.ads[index].dailyImpressions[this.ads[index].dailyImpressions.length - 1]); // Sum the clicks
+        }, 0);
+
+        // Calculate the actual CTR across all ads
+        const actualCtr = totalClicks / totalImpressions;
+
+        // Calculate the adjustment factor to ensure the daily CTRs roll up to the campaign-level CTR
+        const ctrAdjustmentFactor = this.ctr / actualCtr;
+
+        // Adjust each ad's daily CTR based on the adjustment factor
+        const adjustedDailyCtrs = dailyCtrs.map(ctr => ctr * ctrAdjustmentFactor);
+
+        return adjustedDailyCtrs;
+    }
 
     runCampaign() {
         console.log("TARGET CPM", this.cpm);
@@ -225,20 +254,29 @@ export class Campaign {
                 totalDailySpendAtRandomCPMs += spend;
                 totalDailyImpressionsAtRandomCPMs += impressions;
             });
-
+            // Generate CTRs for each ad for the current day, adjusted to roll up to the campaign-level CTR
             const dailyActualCPM = totalDailySpendAtRandomCPMs / (totalDailyImpressionsAtRandomCPMs / 1000);
             const dailyCpmAdjustmentFactor = this.cpm / dailyActualCPM;
 
             // Adjust CPMs to ensure the daily CPM rolls up to the target
             const adjustedDailyCPMs = dailyCPMs.map(cpm => cpm * dailyCpmAdjustmentFactor);
 
-            // Calculate impressions based on adjusted CPMs and store data
             dailySpendDistribution.forEach((spend, index) => {
                 const impressions = (spend / adjustedDailyCPMs[index]) * 1000;
-                this.ads[index].dailyAdSpend.push(spend);
-                this.ads[index].dailyCpm.push(adjustedDailyCPMs[index]);
                 this.ads[index].dailyImpressions.push(Math.round(impressions));
-                this.ads[index].dailyClicks.push(Math.round(impressions * this.ctr))
+            })
+            const dailyCtrs = this.generateDailyCtrs();
+
+
+            // Calculate impressions and clicks based on adjusted CPMs and store data
+            console.log(dailyCtrs)
+            dailySpendDistribution.forEach((spend, index) => {
+                const impressions = this.ads[index].dailyImpressions[day];
+                const clicks = Math.round(impressions * dailyCtrs[index]); // Use individual daily CTR
+                this.ads[index].dailyAdSpend.push(spend);
+                this.ads[index].dailyClicks.push(clicks); // Store clicks
+                this.ads[index].dailyCpm.push(adjustedDailyCPMs[index]);
+                this.ads[index].dailyCtrs.push(dailyCtrs[index]); // Store CTRs
             });
         }
     }
