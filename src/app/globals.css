@@ -34,8 +34,17 @@ body {
   color: white;
 }
 
+input {
+  
+}
 input:not(:disabled) {
-  color: black;
+  background: transparent;
+  border: 1px solid;
+  width: 100%;
+}
+
+::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }
 
 @layer utilities {

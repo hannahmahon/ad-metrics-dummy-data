@@ -19,6 +19,19 @@ export const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return `${date.getFullYear()}-${addLeadingZero(date.getMonth() + 1)}-${addLeadingZero(date.getDate())}`;
 }
+// need at least 5 days for a trend
+const minimumTrendDays = 5;
+
+export type CampaignArgs = {
+    daysInCampaign?: number;
+    startDate: MinMaxRange;
+    endDate: MinMaxRange;
+    numAdsetsPerCampaign: MinMaxRange;
+    numAdsPerAdset: MinMaxRange;
+    dailyAdSpend: MinMaxRange;
+    cpm: MinMaxRange;
+    ctr: MinMaxRange;
+}
 
 class Adset {
     public name: string = "Adset";
@@ -47,16 +60,14 @@ class Ad {
         this.adsetName = adsetName;
         this.name = `Ad_${Math.round(Math.random() * 100000000)}`
 
-        // need at least 3 days for a trend
-        const maxNumberOfTrends = Math.min(Math.floor(daysInCampaign / 3) - 1, 1)
+        const maxNumberOfTrends = Math.min(Math.floor(daysInCampaign / minimumTrendDays) - 1, 1)
         const num = generateRandomNumber([1, maxNumberOfTrends])
-        console.log({ maxNumberOfTrends, num })
         const numTrendPhases = Math.floor(num)
         let daysAvailable = daysInCampaign;
         Array(numTrendPhases).fill(0).forEach((_, i) => {
-            const needThisManyRemaining = (numTrendPhases - i) * 3
+            const needThisManyRemaining = (numTrendPhases - i) * minimumTrendDays
             const maxDaysForThisTrend = daysAvailable - needThisManyRemaining
-            let daysInTrend = Math.floor(generateRandomNumber([3, maxDaysForThisTrend]))
+            let daysInTrend = Math.floor(generateRandomNumber([minimumTrendDays, maxDaysForThisTrend]))
             if (i === numTrendPhases - 1) {
                 daysInTrend = daysAvailable
             }
@@ -70,17 +81,6 @@ class Ad {
             })
         })
     }
-}
-
-export type CampaignArgs = {
-    daysInCampaign?: number;
-    startDate: MinMaxRange;
-    endDate: MinMaxRange;
-    numAdsetsPerCampaign: MinMaxRange;
-    numAdsPerAdset: MinMaxRange;
-    dailyAdSpend: MinMaxRange;
-    cpm: MinMaxRange;
-    ctr: MinMaxRange;
 }
 
 export class Campaign {
@@ -143,12 +143,12 @@ export class Campaign {
         this.normalizedFactors = performanceFactors.map((factor) => factor / sumOfFactors);
 
         // Assign random CPMs to each ad, adjusting them so that their weighted average equals the targetCampaignCPM
-        const randomCPMs = Array(this.ads.length)
-            .fill(0)
-            .map(() => {
-                const val = this.cpm * (0.05 + Math.random() * 1.95)
-                return val;
-            }); // Random CPMs between 5% and 200% of the target
+        // const randomCPMs = Array(this.ads.length)
+        //     .fill(0)
+        //     .map(() => {
+        //         const val = this.cpm * (0.5 + Math.random() * 1.5)
+        //         return val;
+        //     }); // Random CPMs between 50% and 150% of the target
 
         // Calculate the total spend at these CPMs to adjust the overall CPM
         let totalSpendAtRandomCPMs = 0;
@@ -156,7 +156,7 @@ export class Campaign {
 
         this.normalizedFactors.forEach((factor, index) => {
             const spend = factor * this.dailyAdSpend;
-            const impressions = (spend / randomCPMs[index]) * 1000;
+            const impressions = (spend / this.cpm) * 1000;
             totalSpendAtRandomCPMs += spend;
             totalImpressionsAtRandomCPMs += impressions;
         });
