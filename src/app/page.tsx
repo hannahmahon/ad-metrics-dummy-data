@@ -37,7 +37,7 @@ const NumberInput = ({ name, label, defaultValue, disabled }: InputProps) => {
       <React.Fragment>
         {label && <label>{label}</label>}
         <Field
-          className={"my-2 ml-2 py-1 px-2 rounded-lg w-full"}
+          className={"my-2 ml-2 py-1 px-2 rounded-lg w-full dark:text-gray-900"}
           name={name}
           component="input"
           type="number"
@@ -271,7 +271,7 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center md:p-24 m-auto">
+    <main className="flex min-h-screen flex-col items-center md:p-24 m-auto pb-12">
       <div className="z-10 w-full items-center justify-center lg:flex mb-6">
         <h1 className="font-bold font-mono text-4xl mt-24 sm:mt-2 text-center w-full">
           Ad Metric Data Generator
