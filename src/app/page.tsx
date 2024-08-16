@@ -56,7 +56,7 @@ const DateInput = ({ name, label, defaultValue }: InputProps) => {
       <>
         <label>{label}</label>
         <Field
-          className={"my-2 ml-2 py-1 px-2 w-full w-[198px] rounded-lg"}
+          className={"my-2 ml-2 py-1 px-2 w-full w-[198px] rounded-lg dark:text-gray-900"}
           name={name}
           defaultValue={defaultValue}
           component="input"
@@ -121,11 +121,11 @@ const MyForm = ({
 }) => {
   const onSubmit = (values: Record<string, any>) => {
     handleSetIsProcessing(true);
-    const startDateMin = new Date(values.campaignStartDateRangeMin).getTime();
-    const startDateMax = new Date(values.campaignStartDateRangeMax).getTime();
+    const startDateMin = new Date(values.campaignStartDateRangeMin.replace("-", "/")).getTime();
+    const startDateMax = new Date(values.campaignStartDateRangeMax.replace("-", "/")).getTime();
 
-    const endDateMin = new Date(values.campaignEndDateRangeMin).getTime();
-    const endDateMax = new Date(values.campaignEndDateRangeMax).getTime();
+    const endDateMin = new Date(values.campaignEndDateRangeMin.replace("-", "/")).getTime();
+    const endDateMax = new Date(values.campaignEndDateRangeMax.replace("-", "/")).getTime();
 
     const args = {
       startDate: [startDateMin, startDateMax],
@@ -233,7 +233,7 @@ const MyForm = ({
           </fieldset>
 
           <button
-            className="bg-gray-900 text-white py-2 px-3 rounded-lg my-12 w-1/4"
+            className="bg-gray-900 text-white py-2 px-3 rounded-lg my-12 md:w-1/4"
             type="submit"
             disabled={isProcessing}
           >
@@ -313,7 +313,7 @@ export default function Home() {
             <h2 className="text-lg">
               End date: {formatDate(campaign.endDate)}
             </h2>
-            |<h2 className="text-lg">CTR: {Math.round(campaign.ctr * 100)}%</h2>
+            |<h2 className="text-lg">CTR: {(campaign.ctr * 100).toFixed(2)}%</h2>
             |<h2 className="text-lg">CPM: ${campaign.cpm}</h2>
           </div>
           <div className="mt-9 mb-4">
