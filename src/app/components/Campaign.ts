@@ -173,8 +173,8 @@ export class Campaign {
     public startDate: number;
     public endDate: number;
     public daysInCampaign: number;
-    public cpm: number;
-    public ctr: number;
+    public cpm: number = 0;
+    public ctr: number = 0;
 
     constructor({
         startDate,
@@ -231,7 +231,7 @@ export class Campaign {
             return acc;
         }, { impressions: 0, spend: 0, clicks: 0 })
         this.cpm = Math.round(spend / (impressions / 1000))
-        this.ctr = Number((clicks / impressions).toFixed(2))
+        this.ctr = clicks / impressions;
     }
 
     public downloadCSV() {
