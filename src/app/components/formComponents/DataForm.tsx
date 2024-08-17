@@ -49,6 +49,9 @@ export const DataForm = ({
       spendRange: [values.dailySpendMin, values.dailySpendMax].map(Number),
       cpmRange: [values.cpmMin, values.cpmMax].map(Number),
       ctrRange: [values.ctrMin, values.ctrMax].map(Number),
+      cpaRange: [values.cpaMin, values.cpaMax].map(Number),
+      atcRateRange: [values.atcRateMin, values.atcRateMin].map(Number),
+      aovRange: [values.aovMin, values.aovMax].map(Number)
     };
     console.log(args);
     const campaign = new Campaign(args);
@@ -129,20 +132,20 @@ export const DataForm = ({
                   className={`${stackedClasses} pr-2`}
                 />
                 <MinMaxNumberInput
-                  name="aov"
-                  label="Target AOV*"
-                  defaultValues={[40, 250]}
+                  name="cpa"
+                  label="Target CPA"
+                  defaultValues={[35, 150]}
                   className={`${stackedClasses} pl-2`}
                 />
                 <MinMaxNumberInput
-                  name="cac"
-                  label="Target CPA*"
-                  defaultValues={[35, 150]}
+                  name="aov"
+                  label="Target AOV"
+                  defaultValues={[40, 250]}
                   className={`${stackedClasses} pr-2`}
                 />
                 <MinMaxNumberInput
-                  name="clickToATCRatio"
-                  label="Add to Cart Rate*"
+                  name="atcRate"
+                  label="Add to Cart Rate"
                   defaultValues={[0.002, 0.25]}
                   className={`${stackedClasses} pl-2`}
                 />

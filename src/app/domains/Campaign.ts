@@ -10,7 +10,10 @@ type AdsetArgs = {
     adsPerAdsetRange: number[];
     cpmRange: number[];
     ctrRange: number[];
+    cpaRange: number[];
     spendRange: number[];
+    atcRateRange: number[];
+    aovRange: number[];
 }
 export class Campaign {
     public name: string = "Campaign";
@@ -30,7 +33,10 @@ export class Campaign {
         adsPerAdsetRange = [2, 4],
         spendRange = [1000, 120000],
         cpmRange = [9, 45],
-        ctrRange = [.004, .035]
+        ctrRange = [.004, .035],
+        cpaRange = [35, 150],
+        atcRateRange = [.002, .25],
+        aovRange = [40, 250]
     }: CampaignArgs) {
         this.name = `Campaign_${Math.round(Math.random() * 100000000)}`
 
@@ -46,9 +52,12 @@ export class Campaign {
             adsetsPerCampaignRange,
             adsPerAdsetRange,
             daysInCampaign: this.daysInCampaign,
+            spendRange,
             cpmRange,
             ctrRange,
-            spendRange
+            cpaRange,
+            atcRateRange,
+            aovRange
         });
     }
 
@@ -89,6 +98,9 @@ export class Campaign {
             spend: ad.dailyAdSpend[day],
             impressions: Math.round(ad.dailyImpressions[day]),
             clicks: Math.round(ad.dailyClicks[day]),
+            addsToCart: Math.round(ad.dailyAddsToCart[day]),
+            revenue: ad.dailyRevenue[day],
+            purchases: Math.round(ad.dailyPurchases[day]),
             campaign: ad.campaignName,
             adset: ad.adsetName,
             // cpms: parseFloat((ad.dailyAdSpend[day] / (ad.dailyImpressions[day] / 1000)).toFixed(2)),
@@ -97,12 +109,13 @@ export class Campaign {
     }
 
     public downloadCSV() {
-        let csvContent = "data:text/csv;charset=utf-8," + "Date,Ad name,Spend,Impressions,Clicks,Campaign,Adset" + "\r\n";
+        let csvContent = "data:text/csv;charset=utf-8," +
+            "Date,Ad name,Spend,Impressions,Clicks,Adds to cart,Revenue,Purchases,Campaign,Adset" + "\r\n";
         this.ads.forEach(ad => {
             for (let day = 0; day < ad.dailyAdSpend.length; day++) {
                 const date = formatDate(this.startDate + (day * dayInMs))
-                const { ad: name, spend, impressions, clicks, campaign, adset } = this.getFormattedAdValue(ad, day);
-                csvContent += `${date},${name},${spend},${impressions},${clicks},${campaign},${adset}`;
+                const { ad: name, spend, impressions, clicks, addsToCart, revenue, purchases, campaign, adset } = this.getFormattedAdValue(ad, day);
+                csvContent += [date, name, spend, impressions, clicks, addsToCart, revenue, purchases, campaign, adset].join(',')
                 csvContent += "\r\n";
             }
         });
@@ -117,6 +130,9 @@ export class Campaign {
             { headerName: 'Spend', field: 'spend' },
             { headerName: 'Impressions', field: 'impressions' },
             { headerName: 'Clicks', field: 'clicks' },
+            { headerName: 'Adds to cart', field: 'addsToCart' },
+            { headerName: 'Revenue', field: 'revenue' },
+            { headerName: 'Purchases', field: 'purchases' },
             { headerName: 'Campaign', field: 'campaign' },
             { headerName: 'Adset', field: 'adset' },
             // { headerName: 'CPMs', field: 'cpms' },

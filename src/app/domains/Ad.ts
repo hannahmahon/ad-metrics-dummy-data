@@ -5,15 +5,22 @@ export class Ad {
     public name: string = "Ad";
     public campaignName: string = "Campaign";
     public adsetName: string = "Adset";
+    private daysInCampaign: number;
+    private cpmRange: MinMaxRange;
+    private ctrRange: MinMaxRange;
+    private cpaRange: MinMaxRange;
+    private spendRange: MinMaxRange;
+    private atcRateRange: MinMaxRange;
+    private aovRange: MinMaxRange;
+
     public dailyAdSpend: number[] = [];
     public dailyImpressions: number[] = [];
     public dailyCpm: number[] = [];
     public dailyClicks: number[] = [];
     public dailyCpmTrends: number[] = [];
-    private cpmRange: MinMaxRange;
-    private ctrRange: MinMaxRange;
-    private spendRange: MinMaxRange;
-    private daysInCampaign: number;
+    public dailyPurchases: number[] = [];
+    public dailyAddsToCart: number[] = [];
+    public dailyRevenue: number[] = [];
 
     constructor({
         campaignName,
@@ -21,20 +28,29 @@ export class Ad {
         daysInCampaign,
         cpmRange,
         ctrRange,
-        spendRange
+        cpaRange,
+        atcRateRange,
+        spendRange,
+        aovRange
     }: {
         campaignName: string;
         adsetName: string;
         daysInCampaign: number;
         cpmRange: MinMaxRange;
         ctrRange: MinMaxRange;
+        cpaRange: MinMaxRange;
+        atcRateRange: MinMaxRange;
         spendRange: MinMaxRange;
+        aovRange: MinMaxRange;
     }) {
         this.campaignName = campaignName;
         this.adsetName = adsetName;
         this.name = `Ad_${Math.round(Math.random() * 100000000)}`;
         this.cpmRange = cpmRange;
         this.ctrRange = ctrRange;
+        this.cpaRange = cpaRange;
+        this.aovRange = aovRange;
+        this.atcRateRange = atcRateRange;
         this.spendRange = spendRange;
         this.daysInCampaign = daysInCampaign;
 
@@ -100,25 +116,24 @@ export class Ad {
         for (let day = 0; day < this.daysInCampaign; day++) {
             const cpm = this.calculateDailyCpm(day);
             const ctr = this.calculateDailyCtr(day);
-
+            const cpa = generateRandomNumber(this.cpaRange)
+            const atcRate = generateRandomNumber(this.atcRateRange);
             const spend = generateRandomNumber(this.spendRange);
+            const aov = generateRandomNumber(this.aovRange);
+
             const impressions = (spend / cpm) * 1000;
             const clicks = impressions * ctr;
+            const addsToCart = clicks * atcRate;
+            const purchases = spend / cpa;
+            const revenue = purchases * aov;
 
             this.dailyAdSpend.push(spend);
             this.dailyImpressions.push(impressions);
             this.dailyCpm.push(cpm);
             this.dailyClicks.push(clicks);
+            this.dailyPurchases.push(purchases);
+            this.dailyAddsToCart.push(addsToCart);
+            this.dailyRevenue.push(revenue)
         }
-    }
-
-    // Optionally export data as CSV
-    public toCSV() {
-        let csvContent = "data:text/csv;charset=utf-8," + "Day,Ad name,Spend,Impressions,Clicks,Campaign,Adset" + "\r\n";
-        for (let day = 0; day < this.daysInCampaign; day++) {
-            csvContent += `${day + 1},${this.name},${this.dailyAdSpend[day]},${this.dailyImpressions[day]},${this.dailyClicks[day]},${this.campaignName},${this.adsetName}`;
-            csvContent += "\r\n";
-        }
-        return csvContent;
     }
 }

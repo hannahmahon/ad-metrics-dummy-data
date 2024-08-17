@@ -27,4 +27,7 @@ export type CampaignArgs = {
     spendRange: MinMaxRange;
     cpmRange: MinMaxRange;
     ctrRange: MinMaxRange;
+    cpaRange: MinMaxRange;
+    atcRateRange: MinMaxRange;
+    aovRange: MinMaxRange;
 }
