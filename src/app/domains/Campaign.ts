@@ -123,7 +123,7 @@ export class Campaign {
             // { headerName: 'CTRs', field: 'ctrs' },
         ];
         const data: TableData["data"] = []
-        for (let day = 0; day < this.daysInCampaign; day++) {
+        for (let day = 0; day < 100; day++) {
             this.ads.forEach(ad => {
                 const date = formatDate(this.startDate + (day * dayInMs))
                 const adData = this.getFormattedAdValue(ad, day);
