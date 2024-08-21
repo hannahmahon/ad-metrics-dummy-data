@@ -21,7 +21,7 @@ export const MinMaxInput = ({
         <h2 className="text-lg ml-2 mt-4">{label}</h2>
         {inputErrors.length > 0 && 
         (<span className="ml-2 mt-2 text-red-400 flex flex-col">
-          {inputErrors.map((s, i) => <small><sup>*</sup>{s}</small>)}
+          {inputErrors.map((s, i) => <small key={s}><sup>*</sup>{s}</small>)}
           </span>)}
         <div className={`flex flex-wrap w-full ${rangeClassName}`}>
           <Component
