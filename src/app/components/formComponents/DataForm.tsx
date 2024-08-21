@@ -1,70 +1,60 @@
 import { Form } from "react-final-form";
-import { Campaign } from "../../domains/Campaign";
-import { MinMaxNumberInput, MinMaxDateInput } from "./inputs/MinMaxInput";
-import { CampaignArgs } from "../../../../types";
+import { MinMaxNumberInput } from "./inputs/MinMaxInput";
+import { SelectInput } from "./inputs/Select";
+import { useMemo } from "react";
 
 const groupClassNames =
   "group w-full lg:w-1/4 mx-4 rounded-lg border border-transparent px-3 py-3 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:bg-opacity-10 ";
 
-const stackedClasses = `lg:basis-2/4 py-2 flex-grow`
-
-
-
+const stackedClasses = ` py-1 flex-grow`;
 
 export const DataForm = ({
-  handleSetCampaign,
-  handleSetIsProcessing,
+  handleSubmit,
   isProcessing,
 }: {
-  handleSetCampaign: (props: Campaign | null) => void;
-  handleSetIsProcessing: (props: boolean) => void;
+  handleSubmit: (values: Record<string, any>) => void;
   isProcessing: boolean;
 }) => {
-  const onSubmit = (values: Record<string, any>) => {
-    handleSetIsProcessing(true);
-    const startDateMin = new Date(
-      values.campaignStartDateRangeMin.replace("-", "/")
-    ).getTime();
-    const startDateMax = new Date(
-      values.campaignStartDateRangeMax.replace("-", "/")
-    ).getTime();
+  const onSubmit = handleSubmit;
 
-    const endDateMin = new Date(
-      values.campaignEndDateRangeMin.replace("-", "/")
-    ).getTime();
-    const endDateMax = new Date(
-      values.campaignEndDateRangeMax.replace("-", "/")
-    ).getTime();
-
-    const args: CampaignArgs = {
-      startDateRange: [startDateMin, startDateMax],
-      endDateRange: [endDateMin, endDateMax],
-      adsetsPerCampaignRange: [
-        values.numAdsetsPerCampaignsMin,
-        values.numAdsetsPerCampaignsMax,
-      ].map(Number),
-      adsPerAdsetRange: [values.numAdsPerAdsetMin, values.numAdsPerAdsetMax].map(
-        Number
-      ),
-      spendRange: [values.dailySpendMin, values.dailySpendMax].map(Number),
-      cpmRange: [values.cpmMin, values.cpmMax].map(Number),
-      ctrRange: [values.ctrMin, values.ctrMax].map(Number),
-      cpaRange: [values.cpaMin, values.cpaMax].map(Number),
-      atcRateRange: [values.atcRateMin, values.atcRateMin].map(Number),
-      aovRange: [values.aovMin, values.aovMax].map(Number)
-    };
-    console.log(args);
-    const campaign = new Campaign(args);
-    setTimeout(() => {
-      campaign.runCampaign();
-      handleSetCampaign(campaign);
-    }, 0);
-  };
   const validate = (values: Record<string, any>) => {
     const errors: Record<string, any> = {};
 
     return errors;
   };
+
+  const options = useMemo(() => {
+    const halfYear = 6 * 30.437;
+    const nineMonths = 9 * 30.437;
+    const oneYear = 365;
+    return [
+      {
+        name: "7 Days",
+        value: 7,
+      },{
+        name: "30 Days",
+        value: 30,
+      },{
+        name: "90 Days",
+        value: 90,
+      },{
+        name: "6 Months",
+        value: Math.round(halfYear)
+      },{
+        name: "9 Months",
+        value: Math.round(nineMonths)
+      },{
+        name: "1 Year",
+        value: oneYear
+      },{
+        name: "1½ Years",
+        value: (oneYear + halfYear) 
+      },{
+        name: "2 Years",
+        value: oneYear * 2
+      }
+    ];
+  }, []);
 
   return (
     <Form
@@ -74,86 +64,92 @@ export const DataForm = ({
         <form onSubmit={handleSubmit} className="flex flex-col">
           <div className="flex flex-wrap justify-center">
             <fieldset className={`${groupClassNames} flex-grow`}>
-              <h2 className="m-2 font-bold text-2xl">Campaigns</h2>
+              {/* <h2 className="m-2 font-bold text-2xl">Make a Campaign</h2> */}
               <div className="flex flex-wrap">
-                <MinMaxNumberInput
+              <MinMaxNumberInput
                   name="numCampaigns"
-                  label="Number of campaigns*"
+                  label="Number of campaigns"
                   defaultValues={[1, 1]}
-                  disabled
-                  className={`flex-grow`}
+                  className={`${stackedClasses}`}
                   rangeClassName={`md:flex-nowrap`}
                 />
-                <MinMaxDateInput
-                  name="campaignStartDateRange"
-                  label="Campaign start range:"
-                  defaultValues={["2024-01-01", "2024-01-01"]}
-                  className={`${stackedClasses} pr-2`}
-                />
-                <MinMaxDateInput
-                  name="campaignEndDateRange"
-                  label="Campaign end range:"
-                  defaultValues={["2024-01-31", "2024-01-31"]}
-                  className={`${stackedClasses} pl-2`}
+                <SelectInput
+                  name="daysInCampaign"
+                  label={
+                    <span className="text-lg ml-0 my-4 block">
+                      Campaign duration
+                    </span>
+                  }
+                  className="flex-col flex w-full mx-2 my-1"
+                  defaultValue={options[0].value}
+                  options={options}
                 />
                 <MinMaxNumberInput
                   name="numAdsetsPerCampaigns"
                   label="Adsets per campaign"
                   defaultValues={[3, 5]}
-                  className={`${stackedClasses} pr-2`}
+                  className={`${stackedClasses}`}
+                  rangeClassName={`md:flex-nowrap`}
                 />
                 <MinMaxNumberInput
                   name="numAdsPerAdset"
                   label="Ads per adset"
                   defaultValues={[3, 6]}
-                  className={`${stackedClasses} pl-2`}
+                  className={`${stackedClasses}`}
+                  rangeClassName={`md:flex-nowrap`}
                 />
-              </div>
-            </fieldset>
-            <fieldset className={`${groupClassNames} flex-grow`}>
-              <h2 className="m-2 font-bold text-2xl">Metrics</h2>
-              <div className="flex flex-wrap">
                 <MinMaxNumberInput
                   name="dailySpend"
                   label="Daily ad spend"
                   defaultValues={[1000, 10000]}
-                  className={`${stackedClasses} pr-2`}
+                  className={`${stackedClasses}`}
+                  rangeClassName={`md:flex-nowrap`}
                 />
+              </div>
+            </fieldset>
+            <fieldset className={`${groupClassNames} flex-grow`}>
+              {/* <h2 className="m-2 font-bold text-2xl hidden">Metrics</h2> */}
+              <div className="flex flex-wrap">
                 <MinMaxNumberInput
                   name="cpm"
                   label="Target CPM"
                   defaultValues={[25, 45]}
-                  className={`${stackedClasses} pl-2`}
+                  className={`${stackedClasses}`}
+                  rangeClassName={`md:flex-nowrap`}
                 />
                 <MinMaxNumberInput
                   name="ctr"
                   label="Target CTR"
                   defaultValues={[0.004, 0.035]}
-                  className={`${stackedClasses} pr-2`}
+                  className={`${stackedClasses}`}
+                  rangeClassName={`md:flex-nowrap`}
                 />
                 <MinMaxNumberInput
-                  name="cpa"
-                  label="Target CPA"
+                  name="cac"
+                  label="Target CAC"
                   defaultValues={[35, 150]}
-                  className={`${stackedClasses} pl-2`}
+                  className={`${stackedClasses}`}
+                  rangeClassName={`md:flex-nowrap`}
                 />
                 <MinMaxNumberInput
                   name="aov"
                   label="Target AOV"
                   defaultValues={[40, 250]}
-                  className={`${stackedClasses} pr-2`}
+                  className={`${stackedClasses}`}
+                  rangeClassName={`md:flex-nowrap`}
                 />
                 <MinMaxNumberInput
                   name="atcRate"
                   label="Add to Cart Rate"
                   defaultValues={[0.002, 0.25]}
-                  className={`${stackedClasses} pl-2`}
+                  className={`${stackedClasses}`}
+                  rangeClassName={`md:flex-nowrap`}
                 />
               </div>
             </fieldset>
           </div>
           <button
-            className="bg-transparent border text-white py-2 px-3 rounded-lg mx-auto my-12 md:w-1/4 hover:bg-gray-100 hover:bg-opacity-10"
+            className="bg-transparent border text-white py-2 px-3 rounded-lg mx-auto my-12 mb-2 md:w-1/4 hover:bg-gray-100 hover:bg-opacity-10"
             type="submit"
             disabled={isProcessing}
           >

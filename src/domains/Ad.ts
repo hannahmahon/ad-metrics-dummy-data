@@ -1,14 +1,22 @@
-import { MinMaxRange } from "../../../types";
-import { minimumTrendDays, generateRandomNumber } from "../utils";
+import { MinMaxRange } from "../../types";
+import { minimumTrendDays, generateRandomNumber } from "../app/utils";
 
 export class Ad {
     public name: string = "Ad";
     public campaignName: string = "Campaign";
     public adsetName: string = "Adset";
     private daysInCampaign: number;
+
+    public cpm: number;
+    public ctr: number;
+    public cac: number;
+    public spend: number;
+    public aov: number;
+    public atcRate: number;
+
     private cpmRange: MinMaxRange;
     private ctrRange: MinMaxRange;
-    private cpaRange: MinMaxRange;
+    private cacRange: MinMaxRange;
     private spendRange: MinMaxRange;
     private atcRateRange: MinMaxRange;
     private aovRange: MinMaxRange;
@@ -17,6 +25,7 @@ export class Ad {
     public dailyImpressions: number[] = [];
     public dailyCpm: number[] = [];
     public dailyClicks: number[] = [];
+    public dailyAtcTrends: number[] = [];
     public dailyCpmTrends: number[] = [];
     public dailyPurchases: number[] = [];
     public dailyAddsToCart: number[] = [];
@@ -28,7 +37,7 @@ export class Ad {
         daysInCampaign,
         cpmRange,
         ctrRange,
-        cpaRange,
+        cacRange,
         atcRateRange,
         spendRange,
         aovRange
@@ -38,7 +47,7 @@ export class Ad {
         daysInCampaign: number;
         cpmRange: MinMaxRange;
         ctrRange: MinMaxRange;
-        cpaRange: MinMaxRange;
+        cacRange: MinMaxRange;
         atcRateRange: MinMaxRange;
         spendRange: MinMaxRange;
         aovRange: MinMaxRange;
@@ -48,17 +57,22 @@ export class Ad {
         this.name = `Ad_${Math.round(Math.random() * 100000000)}`;
         this.cpmRange = cpmRange;
         this.ctrRange = ctrRange;
-        this.cpaRange = cpaRange;
+        this.cacRange = cacRange;
         this.aovRange = aovRange;
         this.atcRateRange = atcRateRange;
         this.spendRange = spendRange;
+        this.cpm = generateRandomNumber(cpmRange);
+        this.ctr = generateRandomNumber(ctrRange);
+        this.cac = generateRandomNumber(cacRange);
+        this.spend = generateRandomNumber(spendRange);
+        this.aov = generateRandomNumber(aovRange);
+        this.atcRate = generateRandomNumber(atcRateRange);
         this.daysInCampaign = daysInCampaign;
-
-        this.generateDailyCpmTrends();
     }
 
     // Generate random trend phases that affect CPM/CTR trends
-    private generateDailyCpmTrends() {
+    private generateDailyTrends(trendField: 'dailyCpmTrends' | 'dailyAtcTrends', maxDayStrength: number = 0.35) {
+        const isAdWinner = Math.round(Math.random()) === 1;
         const maxNumberOfTrends = Math.floor(this.daysInCampaign / minimumTrendDays);
         const numTrendPhases = Math.floor(generateRandomNumber([0, maxNumberOfTrends]));
         let daysAvailable = this.daysInCampaign;
@@ -72,59 +86,62 @@ export class Ad {
             }
             daysAvailable -= daysInTrend;
 
-            const direction = Math.round(Math.random()) === 0 ? 'up' : 'down';
+            // winner have slightly higher chance of more "ups", losers more "downs"
+            const winnerMultiplier = isAdWinner ? 9 / 8 : 1 / 8;
+            const direction = Math.round(Math.random()) * winnerMultiplier === 0 ? 'up' : 'down';
             Array(daysInTrend).fill(0).forEach(() => {
-                const dayStrength = generateRandomNumber([0, .2]);
+                const dayStrength = generateRandomNumber([0, maxDayStrength]);
                 const trendFactor = direction === 'up' ? 1 + dayStrength : 1 - dayStrength;
-                this.dailyCpmTrends.push(trendFactor);
+                this[trendField].push(trendFactor);
             });
         });
     }
 
-    // Calculate daily CPM based on trends and random fluctuation
-    private calculateDailyCpm(day: number): number {
+    private calculateDailyMetric(
+        day: number,
+        field: 'cpm' | 'ctr' | 'cac' | 'atcRate' | 'spend' | 'aov',
+        trendField: 'dailyCpmTrends' | 'dailyAtcTrends'
+    ) {
         const fluctuation = generateRandomNumber([-0.5, 1.5]); // 50% to 200% fluctuation
-        const baseCpm = generateRandomNumber(this.cpmRange);
-        const trendFactor = this.dailyCpmTrends[day] || 1;
+        const baseMetric = this[field];
+        const trendFactor = this[trendField][day] || 1;
 
         // Calculate the raw CPM value with trends and fluctuations
-        let calculatedCpm = baseCpm * (1 + fluctuation) * trendFactor;
+        let calculatedMetric = baseMetric * trendFactor * (1 + fluctuation)
 
         // Clamp the CPM value to ensure it stays within the range
-        calculatedCpm = Math.max(this.cpmRange[0] * generateRandomNumber([.75, 1.25]), Math.min(calculatedCpm, this.cpmRange[1]));
+        calculatedMetric = Math.max(this[`${field}Range`][0] * generateRandomNumber([.75, 1.25]), Math.min(calculatedMetric, this[`${field}Range`][1] * generateRandomNumber([.95, 1.25])));
 
-        return calculatedCpm;
-    }
-
-    // Calculate daily CTR based on trends and random fluctuation
-    private calculateDailyCtr(day: number): number {
-        const fluctuation = generateRandomNumber([-0.5, 1.5]); // 50% to 200% fluctuation
-        const baseCtr = generateRandomNumber(this.ctrRange);
-        const trendFactor = this.dailyCpmTrends[day] || 1;
-
-        // Calculate the raw CTR value with trends and fluctuations
-        let calculatedCtr = baseCtr * (1 + fluctuation) * trendFactor;
-
-        // Clamp the CTR value to ensure it stays within the range
-        calculatedCtr = Math.max(this.ctrRange[0] * generateRandomNumber([.75, 1.25]), Math.min(calculatedCtr, this.ctrRange[1]));
-
-        return calculatedCtr;
+        return calculatedMetric;
     }
 
     // Run the ad campaign for the specified number of days
-    public runCampaign() {
+    public runCampaign(daysInCampaign: number) {
+        this.daysInCampaign = daysInCampaign;
+        this.dailyAdSpend = [];
+        this.dailyImpressions = [];
+        this.dailyCpm = [];
+        this.dailyClicks = [];
+        this.dailyCpmTrends = [];
+        this.dailyPurchases = [];
+        this.dailyAddsToCart = [];
+        this.dailyRevenue = [];
+
+        this.generateDailyTrends('dailyCpmTrends');
+        this.generateDailyTrends('dailyAtcTrends');
+
         for (let day = 0; day < this.daysInCampaign; day++) {
-            const cpm = this.calculateDailyCpm(day);
-            const ctr = this.calculateDailyCtr(day);
-            const cpa = generateRandomNumber(this.cpaRange)
-            const atcRate = generateRandomNumber(this.atcRateRange);
-            const spend = generateRandomNumber(this.spendRange);
-            const aov = generateRandomNumber(this.aovRange);
+            const cpm = this.calculateDailyMetric(day, 'cpm', 'dailyCpmTrends');
+            const ctr = this.calculateDailyMetric(day, 'ctr', 'dailyCpmTrends');
+            const spend = this.calculateDailyMetric(day, 'spend', 'dailyCpmTrends');
+            const cac = this.calculateDailyMetric(day, 'cac', 'dailyAtcTrends');
+            const atcRate = this.calculateDailyMetric(day, 'atcRate', 'dailyAtcTrends');
+            const aov = this.calculateDailyMetric(day, 'aov', 'dailyAtcTrends');
 
             const impressions = (spend / cpm) * 1000;
             const clicks = impressions * ctr;
             const addsToCart = clicks * atcRate;
-            const purchases = spend / cpa;
+            const purchases = spend / cac;
             const revenue = purchases * aov;
 
             this.dailyAdSpend.push(spend);
