@@ -6,18 +6,20 @@ import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the 
 import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied to the Data Grid
 
 const inter = Inter({ subsets: ["latin"] });
+const title = 'Create Mock Ad Campaign Data | Optimize Your Marketing Strategies'
+const description = 'Generate mock data for ad or marketing campaigns, including daily spend, impressions, clicks, adds to cart, revenue, purchases, and more. Tailor metrics like target CPM, CTR, CAC, AOV, and ATC Rate to optimize your marketing or media buying strategies.'
 
 export const metadata: Metadata = {
-  title: 'Create Mock Ad Campaign Data | Optimize Your Ad Strategies',
-  description: 'Generate mock data for ad campaigns, including daily spend, impressions, clicks, adds to cart, revenue, purchases, and more. Tailor metrics like target CPM, CTR, CAC, AOV, and ATC Rate to optimize your ad strategies.',
-  keywords: ['mock ad data', 'ad campaign optimization', 'CPM', 'CTR', 'CAC', 'ATC Rate', 'digital marketing tools'],
+  title,
+  description,
+  keywords: ['mock ad data', 'ad campaign optimization', 'CPM', 'CTR', 'CAC', 'AOV', 'ATC Rate', 'digital marketing tools', 'media buying tools', 'marketing campaign'],
   authors: [{ name: 'Your Name' }],
   robots: 'index, follow',
   openGraph: {
     type: 'website',
     url: 'https://ad-metrics-dummy-data.vercel.app/',
-    title: 'Create Mock Ad Campaign Data | Optimize Your Ad Strategies',
-    description: 'Generate mock data for ad campaigns, including daily spend, impressions, clicks, adds to cart, revenue, purchases, and more. Tailor metrics like target CPM, CTR, CAC, AOV, and ATC Rate to optimize your ad strategies.',
+    title,
+    description:,
     images: [
       {
         url: 'https://ad-metrics-dummy-data.vercel.app/image.png',
@@ -29,8 +31,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Create Mock Ad Campaign Data | Optimize Your Ad Strategies',
-    description: 'Generate mock data for ad campaigns, including daily spend, impressions, clicks, adds to cart, revenue, purchases, and more. Tailor metrics like target CPM, CTR, CAC, AOV, and ATC Rate to optimize your ad strategies.',
+    title,
+    description,
     images: [
       {
         url: 'https://ad-metrics-dummy-data.vercel.app/image.png',
@@ -56,8 +58,8 @@ export default function RootLayout({
           "@context": "https://schema.org",
           "@type": "WebSite",
           "name": "Mock Ad Campaign Data Generator",
-          "url": "https://www.yourwebsite.com/",
-          "description": "Generate mock data for ad campaigns, including daily spend, impressions, clicks, adds to cart, revenue, purchases, and more. Tailor metrics like target CPM, CTR, CAC, AOV, and ATC Rate to optimize your ad strategies."
+          "url": "https://ad-metrics-dummy-data.vercel.app",
+          "description": description
         })}
       </script>
       </body>
