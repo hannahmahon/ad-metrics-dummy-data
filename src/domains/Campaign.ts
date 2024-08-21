@@ -134,7 +134,7 @@ export class Campaign {
     getFormattedAdValue(ad: Ad, day: number) {
         return {
             ad: ad.name,
-            spend: ad.dailyAdSpend[day],
+            spend: parseCurrency(ad.dailyAdSpend[day]),
             impressions: Math.round(ad.dailyImpressions[day]),
             clicks: Math.round(ad.dailyClicks[day]),
             addsToCart: Math.round(ad.dailyAddsToCart[day]),
