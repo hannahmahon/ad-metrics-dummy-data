@@ -1,6 +1,13 @@
 import { MinMaxRange } from "../../types";
 
 export const dayInMs = 1000 * 60 * 60 * 24;
+export function isValidRange(min: string, max: string) {
+    try {
+        return Number(min) <= Number(max);
+    } catch (e) {
+        return false;
+    }
+}
 export function generateRandomNumber([min, max]: MinMaxRange) {
     return Math.random() * (max - min) + min;
 };

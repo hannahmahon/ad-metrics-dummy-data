@@ -1,11 +1,10 @@
 import React from "react";
-import { Field, useFormState } from "react-final-form";
+import { Field } from "react-final-form";
 import { InputProps } from "../../../../../types";
 import { FieldWrapper } from "../FieldWrapper";
 
 
 export const NumberInput = ({ name, label, defaultValue, disabled }: InputProps) => {
-    const { values } = useFormState();
     return (
       <FieldWrapper>
         <React.Fragment>

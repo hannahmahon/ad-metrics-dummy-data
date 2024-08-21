@@ -120,7 +120,7 @@ export default function Home() {
                 Download CSV
               </button>
             </div>
-            <p>
+            <p className="mb-4">
               <em>
                 CSVs will be available to download for up to 24 hours after
                 form submission. Afterwards, they will be deleted.

@@ -65,11 +65,12 @@ export async function POST(request: NextRequest) {
         console.log({ values })
         const { csvName, csv, campaignData } = handleGenerateCampaigns(values);
 
-        const backBlazeClient = new BackBlazeClient();
-        await backBlazeClient.authenticate();
-        await backBlazeClient.loadUploadUrl();
-        await backBlazeClient.uploadFile(csvName, csv);
-
+        if (csv.length) {
+            const backBlazeClient = new BackBlazeClient();
+            await backBlazeClient.authenticate();
+            await backBlazeClient.loadUploadUrl();
+            await backBlazeClient.uploadFile(csvName, csv);
+        }
         return new Response(JSON.stringify({ csvName, campaignData }), { status: 200 })
     } catch (e: unknown) {
         const error = e as Error

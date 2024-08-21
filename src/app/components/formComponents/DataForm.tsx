@@ -2,6 +2,7 @@ import { Form } from "react-final-form";
 import { MinMaxNumberInput } from "./inputs/MinMaxInput";
 import { SelectInput } from "./inputs/Select";
 import { useMemo } from "react";
+import { isValidRange } from "@/app/utils";
 
 const groupClassNames =
   "group w-full lg:w-1/4 mx-4 rounded-lg border border-transparent px-3 py-3 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:bg-opacity-10 ";
@@ -19,7 +20,23 @@ export const DataForm = ({
 
   const validate = (values: Record<string, any>) => {
     const errors: Record<string, any> = {};
+    Object.keys(values).forEach((key) => {
+      if (key.endsWith("Max")) {
+        const minKey = key.replace("Max", "Min");
+        const keyIsValid = isValidRange(values[minKey], values[key])
+        if (!keyIsValid) {
+          errors[key] = `Max value must be greater than or equal to min value`
+        } else if (Number(values[key]) < 0) {
+          errors[key] = `Max value must be greater than or equal to zero`
+        }
+      } else if (key.endsWith("Min")) {
+        if (Number(values[key]) < 0) {
+          errors[key] = `Min value must be greater than or equal to zero`
+        }
+      }
+    })
 
+    console.log("ERRORS", errors)
     return errors;
   };
 
@@ -60,7 +77,9 @@ export const DataForm = ({
     <Form
       onSubmit={onSubmit}
       validate={validate}
-      render={({ handleSubmit }) => (
+      render={({ handleSubmit,hasValidationErrors, ...rest }) => {
+        console.log(rest);
+        return (
         <form onSubmit={handleSubmit} className="flex flex-col">
           <div className="flex flex-wrap justify-center">
             <fieldset className={`${groupClassNames} flex-grow`}>
@@ -149,14 +168,14 @@ export const DataForm = ({
             </fieldset>
           </div>
           <button
-            className="bg-transparent border text-white py-2 px-3 rounded-lg mx-auto my-12 mb-2 md:w-1/4 hover:bg-gray-100 hover:bg-opacity-10"
+            className="bg-transparent border text-white py-2 px-3 rounded-lg mx-auto my-12 mb-2 md:w-1/4 hover:bg-gray-100 hover:bg-opacity-10 disabled:bg-opacity-10 disabled:bg-gray-100 disabled:opacity-50"
             type="submit"
-            disabled={isProcessing}
+            disabled={isProcessing || hasValidationErrors}
           >
             {isProcessing ? "Processing..." : "Submit"}
           </button>
         </form>
-      )}
+      )}}
     />
   );
 };
