@@ -13,13 +13,13 @@ export const metadata: Metadata = {
   title,
   description,
   keywords: ['mock ad data', 'ad campaign optimization', 'CPM', 'CTR', 'CAC', 'AOV', 'ATC Rate', 'digital marketing tools', 'media buying tools', 'marketing campaign'],
-  authors: [{ name: 'Your Name' }],
+  authors: [{ name: 'Hannah Mahon' }],
   robots: 'index, follow',
   openGraph: {
     type: 'website',
     url: 'https://ad-metrics-dummy-data.vercel.app/',
     title,
-    description:,
+    description,
     images: [
       {
         url: 'https://ad-metrics-dummy-data.vercel.app/image.png',
