@@ -2,7 +2,6 @@
 import { generateRandomNumber, formatDate } from "@/app/utils";
 import { Campaign } from "@/domains/Campaign";
 import { CampaignArgs, CampaignResultData } from "../../../../types";
-import cache from '../../../../cache';
 import { NextRequest } from "next/server";
 import BackBlazeClient from "@/app/backblaze/client";
 

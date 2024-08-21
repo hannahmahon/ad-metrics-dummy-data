@@ -1,25 +1,5 @@
 import { NextRequest } from "next/server";
-import cache from "../../../../../cache";
 import BackBlazeClient from "@/app/backblaze/client";
-
-export async function DELETE(req: NextRequest, { params }: { params: { key: string } }) {
-    try {
-        const key = params.key as string;
-        console.log({ key });
-        cache.delete(key);
-        return new Response(JSON.stringify({ key, status: "success" }), {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        });
-    } catch (e) {
-        const error = e as Error;
-        return new Response(JSON.stringify({ error: error.toString() }), {
-            status: 400
-        })
-    }
-}
 
 export async function GET(req: NextRequest, { params }: { params: { name: string } }) {
     try {

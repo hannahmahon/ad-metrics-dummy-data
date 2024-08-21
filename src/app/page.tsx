@@ -45,19 +45,8 @@ export default function Home() {
   };
 
   const handleSubmit = async (values: Record<string, any>) => {
-    console.log("Submit", csvName.current);
-    let oldCsvName = csvName.current;
     try {
-      if (oldCsvName) {
-        // console.log("DELETE ", oldCsvName)
-        // fetch(`/api/csv/${oldCsvName}`, {
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   method: "DELETE",
-        // })
-      }
-      setIsProcessing(true);
+       setIsProcessing(true);
 
       const { campaignData, csvName: newCsvName } = await fetch(
         `/api/generate`,
