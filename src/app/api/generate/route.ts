@@ -4,6 +4,7 @@ import { Campaign } from "@/domains/Campaign";
 import { CampaignArgs, CampaignResultData } from "../../../../types";
 import { NextRequest } from "next/server";
 import BackBlazeClient from "@/app/backblaze/client";
+import backBlazeClient from "@/app/backblaze/client";
 
 
 const handleGenerateCampaigns = (values: Record<string, string | number>) => {
@@ -66,7 +67,6 @@ export async function POST(request: NextRequest) {
         const { csvName, csv, campaignData } = handleGenerateCampaigns(values);
 
         if (csv.length) {
-            const backBlazeClient = new BackBlazeClient();
             await backBlazeClient.authenticate();
             await backBlazeClient.loadUploadUrl();
             await backBlazeClient.uploadFile(csvName, csv);

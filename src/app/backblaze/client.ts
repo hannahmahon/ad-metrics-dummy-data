@@ -1,9 +1,13 @@
+import { dayInMs } from "../utils";
 import backBlazeConfig from "./config";
 
 class BackBlazeClient {
     public apiUrl: string;
     public downloadUrl?: string;
     public uploadUrl?: string;
+
+    public authorizationTokenExpiration: number = 0;
+    public uploadAuthorizationTokenExpiration: number = 0;
 
     private privateApiUrl?: string;
     private accountId: string;
@@ -22,6 +26,12 @@ class BackBlazeClient {
     }
 
     public async authenticate() {
+        if (new Date().getTime() < this.authorizationTokenExpiration) {
+            console.log("skip authenticate call");
+            return;
+        } else {
+            console.log("authenticating again ", new Date().getTime(), this.authorizationTokenExpiration)
+        }
         const response = await fetch(`${this.apiUrl}b2_authorize_account`, {
             headers: {
                 Authorization: 'Basic ' + Buffer.from(`${this.accountId}:${this.apiKey}`).toString('base64'),
@@ -36,11 +46,19 @@ class BackBlazeClient {
         this.downloadUrl = data.downloadUrl;
         this.authorizationToken = data.authorizationToken;
         this.privateApiUrl = data.apiUrl;
+        this.authorizationTokenExpiration = new Date().getTime() + dayInMs;
+        console.log("set authorizationTokenExpiration", this.authorizationTokenExpiration)
     }
 
     public async loadUploadUrl(bucketId?: string) {
         if (!this.authorizationToken) {
             throw new Error(`User must first be authenticated to make this request with BackBlazeClient.authenticate`);
+        }
+        if (new Date().getTime() < this.uploadAuthorizationTokenExpiration) {
+            console.log("skip upload url authenticate call");
+            return;
+        } else {
+            console.log("upload url authenticating again ", new Date().getTime(), this.uploadAuthorizationTokenExpiration)
         }
 
         const bucket = bucketId || backBlazeConfig.bucketId;
@@ -63,6 +81,8 @@ class BackBlazeClient {
         }
         this.uploadUrl = data.uploadUrl;
         this.uploadAuthorizationToken = data.authorizationToken;
+        this.uploadAuthorizationTokenExpiration = new Date().getTime() + dayInMs;
+        console.log("set uploadAuthorizationTokenExpiration", this.uploadAuthorizationTokenExpiration)
     };
 
     public async getFileId(fileName: string, bucketName?: string) {
@@ -162,4 +182,5 @@ class BackBlazeClient {
 
 }
 
-export default BackBlazeClient;
+const backBlazeClient = new BackBlazeClient();
+export default backBlazeClient;

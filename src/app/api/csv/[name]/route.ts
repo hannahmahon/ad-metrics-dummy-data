@@ -1,10 +1,9 @@
 import { NextRequest } from "next/server";
-import BackBlazeClient from "@/app/backblaze/client";
+import backBlazeClient from "@/app/backblaze/client";
 
 export async function GET(req: NextRequest, { params }: { params: { name: string } }) {
     try {
         const name = params.name as string;
-        const backBlazeClient = new BackBlazeClient();
         await backBlazeClient.authenticate();
         const csv = await backBlazeClient.downloadFile(name)
 
