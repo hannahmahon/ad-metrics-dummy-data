@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
 import { GoDownload } from "react-icons/go";
 import { DataForm } from "./components/formComponents/DataForm";
@@ -7,6 +7,7 @@ import { BoldUppercase } from "./components/BoldUppercase";
 import { formatField } from "./utils";
 import { GoChevronRight, GoChevronDown } from "react-icons/go";
 import { CampaignResultData } from "../../types";
+import LogRocket from 'logrocket';
 
 const campaignMetricsHeaders: {
   headerName: string;
@@ -88,6 +89,12 @@ export default function Home() {
       });
     });
   };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      LogRocket.init('dummy-ad-data/dummy-ad-data');
+    }
+  }, [])
 
   return (
     <main className="flex min-h-screen flex-col items-center md:p-16 m-auto pb-12">
